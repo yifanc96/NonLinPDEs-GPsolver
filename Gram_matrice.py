@@ -4,7 +4,7 @@ from jax import vmap
 
 # numpy
 import numpy as onp
-from kernel import Gaussian_kernel
+from Kernels import Gaussian_kernel
 
 def Gram_matrix_assembly(X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kernel = 'Gaussian', parameter = 0.2):
     N_domain = X_domain.shape[0]
