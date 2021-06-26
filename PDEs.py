@@ -2,21 +2,24 @@
 import jax.numpy as jnp
 from jax import grad, vmap, hessian
 import jax.ops as jop
+from jax.config import config; 
+config.update("jax_enable_x64", True)
 
 # numpy
 import numpy as onp
 from numpy import random 
 
-from Sample_points import sampled_pts_rdm, sampled_pts_grid
+from sample_points import sampled_pts_rdm, sampled_pts_grid
 from Gram_matrice import Gram_matrix_assembly, construct_Theta_test
 
 class Nonlinear_elliptic2d(object):
-    def __init__(self, alpha = None, m = None, bdy =None, rhs=None):
-        # -Delta u + alpha*u^m = f in [0,1]^2
+    def __init__(self, alpha = 1.0, m = 3, bdy =None, rhs=None, domain=onp.array([[0,1],[0,1]])):
+        # default -Delta u + alpha*u^m = f in [0,1]^2
         self.alpha = alpha
         self.m = m
         self.bdy = bdy
         self.rhs = rhs
+        self.domain = domain
         
     def get_bd(self, x1,x2):
         return self.bdy(x1,x2)
@@ -24,13 +27,14 @@ class Nonlinear_elliptic2d(object):
     def get_rhs(self, x1,x2):
         return self.rhs(x1,x2)
     
-    def sampled_pts(self, N_domain, N_boundary, rdm = True):
+    # sampling points according to random or grid rules
+    def sampled_pts(self, N_domain, N_boundary, sampled_type = 'random'):
     # if rdm is true, sample points uniformly randomly, else in a uniform grid
-        if rdm:
-            X_domain, X_boundary = sampled_pts_rdm(N_domain, N_boundary, time_dependent = False)
-        else:
-            assert N_boundary == 4*(onp.sqrt(self.N_domain)+1)
-            X_domain, X_boundary = sampled_pts_grid(N_domain, N_boundary, time_dependent = False)
+        if sampled_type == 'random':
+            X_domain, X_boundary = sampled_pts_rdm(N_domain, N_boundary, self.domain, time_dependent = False)
+        elif sampled_type == 'grid':
+            # assert N_boundary == 4*(onp.sqrt(self.N_domain)+1)
+            X_domain, X_boundary = sampled_pts_grid(N_domain, N_boundary, self.domain, time_dependent = False)
         self.X_domain = X_domain
         self.N_domain = X_domain.shape[0]
         self.X_boundary = X_boundary
@@ -38,7 +42,16 @@ class Nonlinear_elliptic2d(object):
         self.rhs_f = vmap(self.get_rhs)(X_domain[:,0], X_domain[:,1])
         self.bdy_g = vmap(self.get_bd)(X_boundary[:,0], X_boundary[:,1])
     
-    def Gram_matrix(self, kernel = 'Gaussian', kernel_parameter = 0.2, nugget = 1e-15, nugget_type = 'adaptive'):
+    # directly given sampled points
+    def get_sampled_points(self, X_domain, X_boundary):
+        self.X_domain = X_domain
+        self.N_domain = X_domain.shape[0]
+        self.X_boundary = X_boundary
+        self.N_boundary = X_boundary.shape[0]
+        self.rhs_f = vmap(self.get_rhs)(X_domain[:,0], X_domain[:,1])
+        self.bdy_g = vmap(self.get_bd)(X_boundary[:,0], X_boundary[:,1])
+        
+    def Gram_matrix(self, kernel = 'Gaussian', kernel_parameter = 0.2, nugget = 1e-5, nugget_type = 'adaptive'):
         Theta = Gram_matrix_assembly(self.X_domain, self.X_boundary, eqn = 'Nonlinear_elliptic', kernel = kernel, kernel_parameter = kernel_parameter)
         self.nugget_type = nugget_type
         self.nugget = nugget
@@ -110,15 +123,18 @@ class Nonlinear_elliptic2d(object):
         Theta_test = construct_Theta_test(X_test, self.X_domain, self.X_boundary, eqn = 'Nonlinear_elliptic', kernel = self.kernel, kernel_parameter = self.kernel_parameter)
         temp = jnp.linalg.solve(jnp.transpose(self.L),jnp.linalg.solve(self.L,self.sol_vec))
         self.X_test = X_test
+        self.N_test = X_test.shape[0]
         self.extended_sol = jnp.matmul(Theta_test,temp)
+    
         
 class Burgers(object):
-    def __init__(self, alpha = None, nu = None, bdy =None, rhs=None):
-        # -Delta u + alpha*u^m = f in [0,1]^2
+    def __init__(self, alpha = 1.0, nu = 0.2, bdy =None, rhs=None, domain=onp.array([[0,1],[-1,1]])):
+        # default u_t+\alpha u u_x-\nu u_{xx}=0, x \in [-1,1], t \in [0,1] so domain (t,x) in [0,1]*[-1,1] 
         self.alpha = alpha
         self.nu = nu
         self.bdy = bdy
         self.rhs = rhs
+        self.domain = domain
         
     def get_bd(self, x1,x2):
         return self.bdy(x1,x2)
@@ -126,20 +142,29 @@ class Burgers(object):
     def get_rhs(self, x1,x2):
         return self.rhs(x1,x2)
     
-    def sampled_pts(self, N_domain, N_boundary, rdm = True):
+    def sampled_pts(self, N_domain, N_boundary, sampled_type = 'random'):
     # if rdm is true, sample points uniformly randomly, else in a uniform grid
-        if rdm:
-            X_domain, X_boundary = sampled_pts_rdm(N_domain, N_boundary, time_dependent = True)
-        else:
-            X_domain, X_boundary = sampled_pts_grid(N_domain, N_boundary, time_dependent = True)
+        if sampled_type == 'random':
+            X_domain, X_boundary = sampled_pts_rdm(N_domain, N_boundary, self.domain, time_dependent = True)
+        elif sampled_type == 'grid':
+            X_domain, X_boundary = sampled_pts_grid(N_domain, N_boundary, self.domain, time_dependent = True)
         self.X_domain = X_domain
         self.N_domain = X_domain.shape[0]
         self.X_boundary = X_boundary
         self.N_boundary = X_domain.shape[0]
         self.rhs_f = vmap(self.get_rhs)(X_domain[:,0], X_domain[:,1])
         self.bdy_g = vmap(self.get_bd)(X_boundary[:,0], X_boundary[:,1])
-    
-    def Gram_matrix(self, kernel = 'anisotropic Gaussian', kernel_parameter = [1/3,1/20], nugget = 1e-15, nugget_type = 'adaptive'):
+     
+     # directly given sampled points
+    def get_sampled_points(self, X_domain, X_boundary):
+        self.X_domain = X_domain
+        self.N_domain = X_domain.shape[0]
+        self.X_boundary = X_boundary
+        self.N_boundary = X_boundary.shape[0]
+        self.rhs_f = vmap(self.get_rhs)(X_domain[:,0], X_domain[:,1])
+        self.bdy_g = vmap(self.get_bd)(X_boundary[:,0], X_boundary[:,1])
+        
+    def Gram_matrix(self, kernel = 'anisotropic Gaussian', kernel_parameter = [1/3,1/20], nugget = 1e-5, nugget_type = 'adaptive'):
         Theta = Gram_matrix_assembly(self.X_domain, self.X_boundary, eqn = 'Burgers', kernel = kernel, kernel_parameter = kernel_parameter)
         self.nugget_type = nugget_type
         self.nugget = nugget
@@ -152,7 +177,7 @@ class Burgers(object):
             trace3 = jnp.trace(Theta[2*self.N_domain:3*self.N_domain, 2*self.N_domain:3*self.N_domain])
             trace4 = jnp.trace(Theta[3*self.N_domain:, 3*self.N_domain:])
             ratio = [trace1/trace4, trace2/trace4, trace3/trace4]
-            
+            self.ratio = ratio
             temp=jnp.concatenate((ratio[0]*jnp.ones((1,self.N_domain)), ratio[1]*jnp.ones((1,self.N_domain)), ratio[2]*jnp.ones((1,self.N_domain)), jnp.ones((1,self.N_domain+self.N_boundary))), axis=1)
             self.Theta = Theta + nugget*jnp.diag(temp[0])
         elif nugget_type == 'identity':
@@ -226,5 +251,6 @@ class Burgers(object):
         Theta_test = construct_Theta_test(X_test, self.X_domain, self.X_boundary, eqn = 'Burgers', kernel = self.kernel, kernel_parameter = self.kernel_parameter)
         temp = jnp.linalg.solve(jnp.transpose(self.L),jnp.linalg.solve(self.L,self.sol_vec))
         self.X_test = X_test
+        self.N_test = X_test.shape[0]
         self.extended_sol = jnp.matmul(Theta_test,temp)
     

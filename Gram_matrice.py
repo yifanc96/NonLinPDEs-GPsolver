@@ -1,10 +1,12 @@
 # JAX
 import jax.numpy as jnp
 from jax import vmap
+from jax.config import config; 
+config.update("jax_enable_x64", True)
 
 # numpy
 import numpy as onp
-from Kernels import Gaussian_kernel
+from kernels import Gaussian_kernel
 
 def Gram_matrix_assembly(X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kernel = 'Gaussian', kernel_parameter = 0.2):
     N_domain = X_domain.shape[0]
@@ -56,7 +58,6 @@ def construct_Theta_test(X_test, X_domain, X_boundary, eqn = 'Nonlinear_elliptic
     N_test = X_test.shape[0]
     N_domain = X_domain.shape[0]
     N_boundary = X_boundary.shape[0]
-    Theta_test = onp.zeros((N_test, 2*N_domain + N_boundary))
 
     # auxiliary variables to make things readable
     # X_test coordinates
@@ -88,7 +89,7 @@ def construct_Theta_test(X_test, X_domain, X_boundary, eqn = 'Nonlinear_elliptic
         
     # constructing Theta matrix
     if eqn == 'Nonlinear_elliptic':
-        
+        Theta_test = onp.zeros((N_test, 2*N_domain + N_boundary))
         val = vmap(lambda x1,x2,y1,y2: K.Delta_y_kappa(x1, x2, y1, y2, kernel_parameter))(XXtd0.flatten(),XXtd1.flatten(),XXtd0_2.flatten(),XXtd1_2.flatten())
         Theta_test[:,:N_domain] = onp.reshape(val, (N_test, N_domain))
         
