@@ -9,9 +9,9 @@ def sampled_pts_rdm(N_domain, N_boundary, time_dependent = False):
         X_domain = random.uniform(0.0, 1.0, (N_domain, 2))
         N_boundary_per_bd = int(N_boundary/4)
         X_boundary = onp.zeros((N_boundary_per_bd*4, 2))
-
+        
         # bottom face
-        X_boundary[0:N_boundary_per_bd, 0] = random.uniform(0.0, 1.0, onp.arange(N_boundary_per_bd))
+        X_boundary[0:N_boundary_per_bd, 0] = random.uniform(0.0, 1.0, N_boundary_per_bd)
         # right face
         X_boundary[N_boundary_per_bd:2*N_boundary_per_bd, 0] += 1
         X_boundary[N_boundary_per_bd:2*N_boundary_per_bd, 1] = random.uniform(0.0, 1.0, N_boundary_per_bd)
