@@ -1,7 +1,8 @@
 from PDEs import *
 import jax.numpy as jnp
 from jax import grad
-from Sample_points import sampled_pts_grid
+from jax.config import config; 
+config.update("jax_enable_x64", True)
 
 alpha = 1
 m = 3
@@ -16,13 +17,14 @@ N_domain = 30**2
 N_boundary = 32**2-N_domain
 
 eqn.sampled_pts(N_domain, N_boundary, rdm = True)
-eqn.Gram_matrix(kernel = 'Gaussian', kernel_parameter = 0.2, nugget = 1e-4, nugget_type = 'adaptive')
+eqn.Gram_matrix(kernel = 'Gaussian', kernel_parameter = 0.2, nugget = 1e-10, nugget_type = 'adaptive')
 eqn.Gram_Cholesky()
-eqn.GN_method(max_iter = 3, step_size = 1, initial_sol = 'rdm', print_hist = True)
+eqn.GN_method(max_iter = 4, step_size = 1, initial_sol = 'rdm', print_hist = True)
 
 N_pts = 40
-N_domain = N_pts**2
-N_boundary = 4*(N_pts+1)
-X_test = jnp.concatenate(sampled_pts_grid(N_domain, N_boundary), axis=0)
+xx= jnp.linspace(0, 1, N_pts)
+yy = jnp.linspace(0, 1, N_pts)
+XX, YY = jnp.meshgrid(xx, yy)
+X_test = jnp.concatenate((XX.reshape(-1,1),YY.reshape(-1,1)), axis=1)
 eqn.extend_sol(X_test)
 

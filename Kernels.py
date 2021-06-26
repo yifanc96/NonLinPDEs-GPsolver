@@ -1,5 +1,7 @@
 import jax.numpy as jnp
 from jax import grad
+from jax.config import config; 
+config.update("jax_enable_x64", True)
 
 class Gaussian_kernel(object):
     def __init__(self):
