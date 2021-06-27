@@ -8,6 +8,7 @@ import numpy as onp
 
 # equation
 from PDEs import Nonlinear_elliptic2d, Burgers, Eikonal
+from InverseProblems import Darcy_flow2d
 
 # visulization: plot figures
 import matplotlib.pyplot as plt
@@ -37,7 +38,7 @@ plt.rcParams['legend.handlelength'] = lhandle
 fmt = ticker.ScalarFormatter(useMathText=True)
 fmt.set_powerlimits((0, 0))
 
-class solver_PDE(object):
+class solver_GP(object):
     def __init__(self,cfg = None, PDE_type = "Nonlinear_elliptic"):
         self.config = cfg
         self.PDE_type = PDE_type
@@ -68,6 +69,13 @@ class solver_PDE(object):
                 print(f'[Equation domain] [{domain[0,0]},{domain[0,1]}]*[{domain[1,0]},{domain[1,1]}]')
                 print(f'[Equation parameter] eps = {self.config.eps}')
                 print('[Equation data] Right hand side and boundary values set by the user')
+        elif self.PDE_type == "Darcy_flow2d":
+            self.eqn = Darcy_flow2d(bdy = bdy, rhs = rhs, domain = domain)
+            if print_option:
+                print('[Inverse problem type] Darcy flow 2d')
+                print('[Inverse problem form] -div(a grad u) = f, infer a from f and some observed u')
+                print(f'[Equation domain] [{domain[0,0]},{domain[0,1]}]*[{domain[1,0]},{domain[1,1]}]')
+                print('[Equation data] Right hand side and boundary values set by the user')
                 
     def get_sample(self, X_domain, X_boundary, print_option = True):
         # sampling points
@@ -92,6 +100,38 @@ class solver_PDE(object):
         ax.legend(loc="upper right")
         plt.title('Collocation points')
         
+    # for inverse problems:
+    def get_sample_IP(self, X_domain, X_boundary, X_data, print_option = True):
+        # sampling points
+        self.eqn.get_sampled_points(self, X_domain, X_boundary, X_data)
+        if print_option:
+            print('[Sample points] Collocation points sampled, specified by the user')
+            print(f'[Sample points] N_domain = {self.eqn.N_domain}, N_boundary = {self.eqn.N_boundary}, N_data = {self.eqn.N_data}')
+        
+    def auto_sample_IP(self, N_domain, N_boundary, N_data, sampled_type = 'random', print_option = True):
+        self.eqn.sampled_pts(N_domain, N_boundary, N_data, sampled_type = sampled_type)
+        if print_option:
+            print(f'[Sample points] Collocation points sampled, type {sampled_type}')
+            print(f'[Sample points] N_domain = {self.eqn.N_domain}, N_boundary = {self.eqn.N_boundary}, N_data = {self.eqn.N_data}')
+            
+    def show_sample_IP(self):
+        fig = plt.figure()
+        ax = fig.add_subplot(111)
+        int_data=ax.scatter(self.eqn.X_domain[:, 0], self.eqn.X_domain[:, 1], label='Interior nodes')
+        bd_data=ax.scatter(self.eqn.X_boundary[:, 0], self.eqn.X_boundary[:, 1], label='Boundary nodes')
+        observed_data = ax.scatter(self.eqn.X_domain[:self.eqn.N_data, 0], self.eqn.X_domain[:self.eqn.N_data, 1], label='Data nodes')
+        int_data.set_clip_on(False)
+        bd_data.set_clip_on(False)
+        observed_data.set_clip_on(False)
+        ax.legend(loc="upper right")
+        plt.title('Collocation and data points')
+    
+    def get_observed_data(self, data_u, noise_level, print_option = True):
+        self.eqn.get_observation(data_u, noise_level)
+        if print_option:
+            print('[Observed Data] Get observed data from solving the PDE using FD and interpolation')
+            print(f'[Observed Data] Noise level {noise_level}')
+        
     def solve(self, print_option=True):
         if print_option:
             print('[Kernel] ' + self.config.kernel)
@@ -100,6 +140,7 @@ class solver_PDE(object):
         self.eqn.Gram_matrix(kernel = self.config.kernel, kernel_parameter = self.config.kernel_parameter, nugget = self.config.nugget, nugget_type = self.config.nugget_type)
         if print_option:
             print(f'[Gram matrix] Finish assembly of the Gram matrix, nugget {self.config.nugget}, type {self.config.nugget_type}')
+            print(self.eqn.ratio_u)
         # Cholesky
         self.eqn.Gram_Cholesky()
         if print_option:
@@ -134,7 +175,7 @@ class solver_PDE(object):
             print(f'[Testing...] Number of test points: {X_test.shape[0]}')
         # GP test and extension
         self.eqn.extend_sol(X_test)
-        
+    
     def get_test_error(self, truth, print_option = True):
         # truth is the true value of the function on X_test
         self.test_err_all= abs(truth-self.eqn.extended_sol)

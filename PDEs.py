@@ -31,10 +31,9 @@ class Nonlinear_elliptic2d(object):
     def sampled_pts(self, N_domain, N_boundary, sampled_type = 'random'):
     # if rdm is true, sample points uniformly randomly, else in a uniform grid
         if sampled_type == 'random':
-            X_domain, X_boundary = sampled_pts_rdm(self.N_domain, N_boundary, self.domain, time_dependent = False)
+            X_domain, X_boundary = sampled_pts_rdm(N_domain, N_boundary, self.domain, time_dependent = False)
         elif sampled_type == 'grid':
-            # assert N_boundary == 4*(onp.sqrt(self.N_domain)+1)
-            X_domain, X_boundary = sampled_pts_grid(self.N_domain, N_boundary, self.domain, time_dependent = False)
+            X_domain, X_boundary = sampled_pts_grid(N_domain, N_boundary, self.domain, time_dependent = False)
         self.X_domain = X_domain
         self.N_domain = X_domain.shape[0]
         self.X_boundary = X_boundary
@@ -145,9 +144,9 @@ class Burgers(object):
     def sampled_pts(self, N_domain, N_boundary, sampled_type = 'random'):
     # if rdm is true, sample points uniformly randomly, else in a uniform grid
         if sampled_type == 'random':
-            X_domain, X_boundary = sampled_pts_rdm(self.N_domain, N_boundary, self.domain, time_dependent = True)
+            X_domain, X_boundary = sampled_pts_rdm(N_domain, N_boundary, self.domain, time_dependent = True)
         elif sampled_type == 'grid':
-            X_domain, X_boundary = sampled_pts_grid(self.N_domain, N_boundary, self.domain, time_dependent = True)
+            X_domain, X_boundary = sampled_pts_grid(N_domain, N_boundary, self.domain, time_dependent = True)
         self.X_domain = X_domain
         self.N_domain = X_domain.shape[0]
         self.X_boundary = X_boundary
@@ -274,7 +273,6 @@ class Eikonal(object):
         if sampled_type == 'random':
             X_domain, X_boundary = sampled_pts_rdm(N_domain, N_boundary, self.domain, time_dependent = False)
         elif sampled_type == 'grid':
-            # assert N_boundary == 4*(onp.sqrt(self.N_domain)+1)
             X_domain, X_boundary = sampled_pts_grid(N_domain, N_boundary, self.domain, time_dependent = False)
         self.X_domain = X_domain
         self.N_domain = X_domain.shape[0]
@@ -383,7 +381,7 @@ class Eikonal(object):
         sol_vec = jnp.append(vv, self.bdy_g)
         
         self.sol_vec = sol_vec
-        self.sol_sampled_pts = sol
+        self.sol_sampled_pts = v0
     
     def extend_sol(self,X_test):
         Theta_test = construct_Theta_test(X_test, self.X_domain, self.X_boundary, eqn = 'Eikonal', kernel = self.kernel, kernel_parameter = self.kernel_parameter)
