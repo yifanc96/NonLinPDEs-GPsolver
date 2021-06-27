@@ -140,7 +140,6 @@ class solver_GP(object):
         self.eqn.Gram_matrix(kernel = self.config.kernel, kernel_parameter = self.config.kernel_parameter, nugget = self.config.nugget, nugget_type = self.config.nugget_type)
         if print_option:
             print(f'[Gram matrix] Finish assembly of the Gram matrix, nugget {self.config.nugget}, type {self.config.nugget_type}')
-            print(self.eqn.ratio_u)
         # Cholesky
         self.eqn.Gram_Cholesky()
         if print_option:
