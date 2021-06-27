@@ -57,6 +57,7 @@ class solver_GP(object):
         elif self.PDE_type == "Burgers":
             self.eqn = Burgers(alpha = self.config.alpha, nu = self.config.nu, bdy = bdy, rhs = rhs, domain = domain)
             if print_option:
+                print('\n Solver started')
                 print('[Equation type] Burgers equation')
                 print('[Equation form] u_t+ alpha u u_x- nu u_xx=0')
                 print(f'[Equation domain] [{domain[0,0]},{domain[0,1]}]*[{domain[1,0]},{domain[1,1]}]')
@@ -65,6 +66,7 @@ class solver_GP(object):
         elif self.PDE_type == "Eikonal":
             self.eqn = Eikonal(eps = self.config.eps, bdy = bdy, rhs = rhs, domain = domain)
             if print_option:
+                print('\n Solver started')
                 print('[Equation type] Eikonal equation')
                 print('[Equation form] |grad u|^2 = f + eps*Delta u')
                 print(f'[Equation domain] [{domain[0,0]},{domain[0,1]}]*[{domain[1,0]},{domain[1,1]}]')
@@ -73,6 +75,7 @@ class solver_GP(object):
         elif self.PDE_type == "Darcy_flow2d":
             self.eqn = Darcy_flow2d(bdy = bdy, rhs = rhs, domain = domain)
             if print_option:
+                print('\n Solver started')
                 print('[Inverse problem type] Darcy flow 2d')
                 print('[Inverse problem form] -div(a grad u) = f, infer a from f and some observed u')
                 print(f'[Equation domain] [{domain[0,0]},{domain[0,1]}]*[{domain[1,0]},{domain[1,1]}]')

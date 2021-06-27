@@ -86,7 +86,7 @@ print('\n Finished err_alpha_1_adapt_sigma')
 print(f'Max err: {err_alpha_1_adapt_sigma.Maxerr}')
 print(f'L2 err: {err_alpha_1_adapt_sigma.L2err}\n')
 
-# for err_alpha_1_adapt_sigma
+# for err_alpha_1_const_sigma
 for iter in range(err_alpha_1_const_sigma.arr_num):
     # get number of points in each dimension
     N_pts_per_dim = err_alpha_1_const_sigma.arr_N_pts_per_dim[iter]
@@ -179,12 +179,12 @@ fig = plt.figure(figsize=(12,5))
 # plot the contour error
 ax = fig.add_subplot(121)
 
-ax.plot(err_alpha_0_const_sigma.arr_N_pts_per_dim, err_alpha_0_const_sigma.L2err[0,:], label='$L^2$, $\sigma = 0.2$')
-ax.plot(err_alpha_0_const_sigma.arr_N_pts_per_dim, err_alpha_0_const_sigma.Maxerr[0,:], label='$L^\infty$, $\sigma = 0.2$')
-ax.plot(err_alpha_0_adapt_sigma.arr_N_pts_per_dim, err_alpha_0_adapt_sigma.L2err[0,:], label='$L^2$, $\sigma = M^{-1/4}$')
-ax.plot(err_alpha_0_adapt_sigma.arr_N_pts_per_dim, err_alpha_0_adapt_sigma.Maxerr[0,:], label='$L^\infty$, $\sigma = M^{-1/4}$')
-ax.plot(err_alpha_0_FD.arr_N_pts_per_dim, err_alpha_0_FD.L2err[0,:], label='$L^2$ (FD)')
-ax.plot(err_alpha_0_FD.arr_N_pts_per_dim, err_alpha_0_FD.Maxerr[0,:], label='$L^\infty$ (FD)')
+ax.plot(err_alpha_0_const_sigma.arr_N_pts_per_dim**2, err_alpha_0_const_sigma.L2err[0,:], label='$L^2$, $\sigma = 0.2$')
+ax.plot(err_alpha_0_const_sigma.arr_N_pts_per_dim**2, err_alpha_0_const_sigma.Maxerr[0,:], label='$L^\infty$, $\sigma = 0.2$')
+ax.plot(err_alpha_0_adapt_sigma.arr_N_pts_per_dim**2, err_alpha_0_adapt_sigma.L2err[0,:], label='$L^2$, $\sigma = M^{-1/4}$')
+ax.plot(err_alpha_0_adapt_sigma.arr_N_pts_per_dim**2, err_alpha_0_adapt_sigma.Maxerr[0,:], label='$L^\infty$, $\sigma = M^{-1/4}$')
+ax.plot(err_alpha_0_FD.arr_N_pts_per_dim**2, err_alpha_0_FD.L2err[0,:], label='$L^2$ (FD)')
+ax.plot(err_alpha_0_FD.arr_N_pts_per_dim**2, err_alpha_0_FD.Maxerr[0,:], label='$L^\infty$ (FD)')
 
 plt.xlabel('$M$', fontsize=here_fontsize)
 plt.ylabel('Error', fontsize=here_fontsize)
@@ -196,10 +196,10 @@ ax.legend(loc="upper right")
 # plot the collocation pts
 ax = fig.add_subplot(122)
 
-ax.plot(err_alpha_1_const_sigma.arr_N_pts_per_dim, err_alpha_1_const_sigma.L2err[0,:], label='$L^2$, $\sigma = 0.2$')
-ax.plot(err_alpha_1_const_sigma.arr_N_pts_per_dim, err_alpha_1_const_sigma.Maxerr[0,:], label='$L^\infty$, $\sigma = 0.2$')
-ax.plot(err_alpha_1_adapt_sigma.arr_N_pts_per_dim, err_alpha_1_adapt_sigma.L2err[0,:], label='$L^2$, $\sigma = M^{-1/4}$')
-ax.plot(err_alpha_1_adapt_sigma.arr_N_pts_per_dim, err_alpha_1_adapt_sigma.Maxerr[0,:], label='$L^\infty$, $\sigma = M^{-1/4}$')
+ax.plot(err_alpha_1_const_sigma.arr_N_pts_per_dim**2, err_alpha_1_const_sigma.L2err[0,:], label='$L^2$, $\sigma = 0.2$')
+ax.plot(err_alpha_1_const_sigma.arr_N_pts_per_dim**2, err_alpha_1_const_sigma.Maxerr[0,:], label='$L^\infty$, $\sigma = 0.2$')
+ax.plot(err_alpha_1_adapt_sigma.arr_N_pts_per_dim**2, err_alpha_1_adapt_sigma.L2err[0,:], label='$L^2$, $\sigma = M^{-1/4}$')
+ax.plot(err_alpha_1_adapt_sigma.arr_N_pts_per_dim**2, err_alpha_1_adapt_sigma.Maxerr[0,:], label='$L^\infty$, $\sigma = M^{-1/4}$')
 
 plt.xlabel('$M$', fontsize=here_fontsize)
 plt.ylabel('Error', fontsize=here_fontsize)
