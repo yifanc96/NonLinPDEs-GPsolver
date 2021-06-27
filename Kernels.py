@@ -49,6 +49,10 @@ class Gaussian_kernel(object):
     def D_x2_D_y2_kappa(self, x1, x2, y1, y2, sigma):
         val = grad(grad(self.kappa,1),3)(x1, x2, y1, y2, sigma)
         return val
+    
+    def D_x2_D_y1_kappa(self, x1, x2, y1, y2, sigma):
+        val = grad(self.D_x2_kappa,2)(x1, x2, y1, y2, sigma)
+        return val
 
     def D_x2_DD_y2_kappa(self, x1, x2, y1, y2, sigma):
         val = grad(grad(grad(self.kappa,1),3),3)(x1, x2, y1, y2, sigma)
@@ -66,11 +70,6 @@ class Gaussian_kernel(object):
     def Delta_y_kappa(self, x1, x2, y1, y2, sigma):
         val = grad(grad(self.kappa, 2), 2)(x1, x2, y1, y2, sigma)
         val += grad(grad(self.kappa, 3), 3)(x1, x2, y1, y2, sigma)
-        return val
-
-    def Delta_x_y_kappa(self,x1, x2, y1, y2, sigma):
-        val = grad(grad(self.Delta_y_kappa, 0), 0)(x1, x2, y1, y2, sigma)
-        val += grad(grad(self.Delta_y_kappa, 1), 1)(x1, x2, y1, y2, sigma)
         return val
     
     def Delta_x_Delta_y_kappa(self, x1, x2, y1, y2, sigma):
@@ -136,7 +135,11 @@ class Anisotropic_Gaussian_kernel(object):
     def D_x2_D_y2_kappa(self, x1, x2, y1, y2, sigma):
         val = grad(grad(self.kappa,1),3)(x1, x2, y1, y2, sigma)
         return val
-
+    
+    def D_x2_D_y1_kappa(self, x1, x2, y1, y2, sigma):
+        val = grad(self.D_x2_kappa,2)(x1, x2, y1, y2, sigma)
+        return val
+    
     def D_x2_DD_y2_kappa(self, x1, x2, y1, y2, sigma):
         val = grad(grad(grad(self.kappa,1),3),3)(x1, x2, y1, y2, sigma)
         return val

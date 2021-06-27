@@ -6,7 +6,7 @@ from jax.config import config;
 config.update("jax_enable_x64", True)
 import numpy as onp
 # solver
-from solver import solver_PDE
+from solver import solver_GP
 # dict to class attribute for configuration (cfg) file
 import munch
 
@@ -30,7 +30,7 @@ cfg_NLE =munch.munchify({
 show_figure = True # whether to show solution and loss figures
 
 # step 0: initialize the solver
-solver = solver_PDE(cfg_NLE, PDE_type = "Nonlinear_elliptic")
+solver = solver_GP(cfg_NLE, PDE_type = "Nonlinear_elliptic")
 
 # step 1: set the equation, rhs, bdy
 alpha = 1

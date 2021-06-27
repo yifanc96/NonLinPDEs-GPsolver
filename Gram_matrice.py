@@ -43,7 +43,7 @@ def Gram_matrix_assembly(X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kerne
         Theta = onp.zeros((2*N_domain + N_boundary, 2*N_domain + N_boundary))
         # Construct kernel matrix
         # interior v.s. interior (Laplace)
-        val = vmap(lambda x1, x2, y1, y2: K.Delta_x_y_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),onp.transpose(XXdd0).flatten(),onp.transpose(XXdd1).flatten())
+        val = vmap(lambda x1, x2, y1, y2: K.Delta_x_Delta_y_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),onp.transpose(XXdd0).flatten(),onp.transpose(XXdd1).flatten())
         Theta[0:N_domain, 0:N_domain] =  onp.reshape(val, (N_domain, N_domain))
         
         # interior+boundary v.s. interior+boundary
@@ -54,7 +54,8 @@ def Gram_matrix_assembly(X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kerne
         val = vmap(lambda x1, x2, y1, y2: K.Delta_x_kappa(x1, x2, y1, y2, kernel_parameter))(XXddb0.flatten(),XXddb1.flatten(),XXddb0_2.flatten(),XXddb1_2.flatten())
         Theta[:N_domain, N_domain:] = onp.reshape(val, (N_domain, N_domain+N_boundary))
         Theta[N_domain:, :N_domain] = onp.transpose(onp.reshape(val, (N_domain, N_domain+N_boundary)))
-        
+        return Theta
+    
     elif eqn == 'Burgers':
         # Construct kernel matrix
         Theta = jnp.zeros((4*N_domain + N_boundary, 4*N_domain + N_boundary))
@@ -96,6 +97,7 @@ def Gram_matrix_assembly(X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kerne
         val = vmap(lambda x1, x2, y1, y2: K.DD_x2_kappa(x1, x2, y1, y2, kernel_parameter))(XXddb0.flatten(),XXddb1.flatten(),XXddb0_2.flatten(),XXddb1_2.flatten())
         Theta = jop.index_update(Theta, jop.index[2*N_domain:3*N_domain, 3*N_domain:], jnp.reshape(val, (N_domain, N_domain+N_boundary)))
         Theta = jop.index_update(Theta, jop.index[3*N_domain:, 2*N_domain:3*N_domain], jnp.transpose(jnp.reshape(val, (N_domain, N_domain+N_boundary))))
+        return Theta
     elif eqn == 'Eikonal':
         Theta = onp.zeros((4*N_domain + N_boundary, 4*N_domain + N_boundary))
         val = vmap(lambda x1, x2, y1, y2: K.D_x1_D_y1_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),jnp.transpose(XXdd0).flatten(),jnp.transpose(XXdd1).flatten())
@@ -131,8 +133,60 @@ def Gram_matrix_assembly(X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kerne
         val = vmap(lambda x1, x2, y1, y2: K.Delta_x_kappa(x1, x2, y1, y2, kernel_parameter))(XXddb0.flatten(),XXddb1.flatten(),XXddb0_2.flatten(),XXddb1_2.flatten())
         Theta[2*N_domain:3*N_domain, 3*N_domain:] = jnp.reshape(val, (N_domain, N_domain+N_boundary))
         Theta[3*N_domain:, 2*N_domain:3*N_domain] = jnp.transpose(jnp.reshape(val, (N_domain, N_domain+N_boundary)))
+        return Theta
     
-    return Theta
+    elif eqn == 'Darcy_flow2d':
+        Theta_a = onp.zeros((3*N_domain, 3*N_domain))
+        Theta_u = onp.zeros((4*N_domain + N_boundary, 4*N_domain + N_boundary))
+        
+        # Construct kernel matrix Theta_u
+        # interior v.s. interior 
+        val = vmap(lambda x1, x2, y1, y2: K.D_x1_D_y1_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),onp.transpose(XXdd0).flatten(),onp.transpose(XXdd1).flatten())
+        Theta_u[0:N_domain, 0:N_domain] =  onp.reshape(val, (N_domain, N_domain))
+        
+        val = vmap(lambda x1, x2, y1, y2: K.D_x2_D_y2_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),onp.transpose(XXdd0).flatten(),onp.transpose(XXdd1).flatten())
+        Theta_u[N_domain:2*N_domain, N_domain:2*N_domain] =  onp.reshape(val, (N_domain, N_domain))
+        
+        val = vmap(lambda x1, x2, y1, y2: K.D_x2_D_y1_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),onp.transpose(XXdd0).flatten(),onp.transpose(XXdd1).flatten())
+        Theta_u[N_domain:2*N_domain, 0:N_domain] =  onp.reshape(val, (N_domain, N_domain))
+        Theta_u[0:N_domain, N_domain:2*N_domain] = onp.transpose(onp.reshape(val, (N_domain, N_domain)))
+        
+        val = vmap(lambda x1, x2, y1, y2: K.Delta_x_Delta_y_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),onp.transpose(XXdd0).flatten(),onp.transpose(XXdd1).flatten())
+        Theta_u[2*N_domain:3*N_domain, 2*N_domain:3*N_domain] =  onp.reshape(val, (N_domain, N_domain))
+        
+        val = vmap(lambda x1, x2, y1, y2: K.Delta_x_D_y1_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),onp.transpose(XXdd0).flatten(),onp.transpose(XXdd1).flatten())
+        Theta_u[2*N_domain:3*N_domain, 0:N_domain] =  onp.reshape(val, (N_domain, N_domain))
+        Theta_u[0:N_domain, 2*N_domain:3*N_domain] = onp.transpose(onp.reshape(val, (N_domain, N_domain)))
+        
+        val = vmap(lambda x1, x2, y1, y2: K.Delta_x_D_y2_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),onp.transpose(XXdd0).flatten(),onp.transpose(XXdd1).flatten())
+        Theta_u[2*N_domain:3*N_domain, N_domain:2*N_domain] =  onp.reshape(val, (N_domain, N_domain))
+        Theta_u[N_domain:2*N_domain, 2*N_domain:3*N_domain] = onp.transpose(onp.reshape(val, (N_domain, N_domain)))
+        
+        # interior+boundary v.s. interior+boundary
+        val = vmap(lambda x1, x2, y1, y2: K.kappa(x1, x2, y1, y2, kernel_parameter))(XXdbdb0.flatten(),XXdbdb1.flatten(),onp.transpose(XXdbdb0).flatten(),onp.transpose(XXdbdb1).flatten())
+        Theta_u[3*N_domain:, 3*N_domain:] =  onp.reshape(val, (N_domain+N_boundary, N_domain+N_boundary))
+
+        # interior v.s. interior+boundary
+        val = vmap(lambda x1, x2, y1, y2: K.D_x1_kappa(x1, x2, y1, y2, kernel_parameter))(XXddb0.flatten(),XXddb1.flatten(),XXddb0_2.flatten(),XXddb1_2.flatten())
+        Theta_u[0:N_domain, 3*N_domain:] = onp.reshape(val, (N_domain, N_domain+N_boundary))
+        Theta_u[3*N_domain:, 0:N_domain] = onp.transpose(onp.reshape(val, (N_domain, N_domain+N_boundary)))
+        
+        val = vmap(lambda x1, x2, y1, y2: K.D_x2_kappa(x1, x2, y1, y2, kernel_parameter))(XXddb0.flatten(),XXddb1.flatten(),XXddb0_2.flatten(),XXddb1_2.flatten())
+        Theta_u[N_domain:2*N_domain, 3*N_domain:] = onp.reshape(val, (N_domain, N_domain+N_boundary))
+        Theta_u[3*N_domain:, N_domain:2*N_domain] = onp.transpose(onp.reshape(val, (N_domain, N_domain+N_boundary)))
+        
+        val = vmap(lambda x1, x2, y1, y2: K.Delta_x_kappa(x1, x2, y1, y2, kernel_parameter))(XXddb0.flatten(),XXddb1.flatten(),XXddb0_2.flatten(),XXddb1_2.flatten())
+        Theta_u[2*N_domain:3*N_domain, 3*N_domain:] = onp.reshape(val, (N_domain, N_domain+N_boundary))
+        Theta_u[3*N_domain:, 2*N_domain:3*N_domain] = onp.transpose(onp.reshape(val, (N_domain, N_domain+N_boundary)))
+        
+        # Construct kernel matrix Theta_a
+        # interior v.s. interior 
+        Theta_a[0:2*N_domain, 0:2*N_domain] = Theta_u[0:2*N_domain, 0:2*N_domain]
+        Theta_a[2*N_domain:3*N_domain, 2*N_domain:3*N_domain] = Theta_u[3*N_domain:4*N_domain, 3*N_domain:4*N_domain]
+        Theta_a[0:2*N_domain, 2*N_domain:3*N_domain] = Theta_u[0:2*N_domain, 3*N_domain:4*N_domain]
+        Theta_a[2*N_domain:3*N_domain, 0:2*N_domain] = Theta_u[3*N_domain:4*N_domain, 0:2*N_domain]
+        return Theta_u, Theta_a
+
 
 def construct_Theta_test(X_test, X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kernel = 'Gaussian', kernel_parameter = 0.2):
     N_test = X_test.shape[0]
@@ -177,7 +231,7 @@ def construct_Theta_test(X_test, X_domain, X_boundary, eqn = 'Nonlinear_elliptic
         
         val = vmap(lambda x1,x2,y1,y2: K.kappa(x1, x2, y1, y2, kernel_parameter))(XXtdb0.flatten(),XXtdb1.flatten(),XXtdb0_2.flatten(),XXtdb1_2.flatten())
         Theta_test[:, N_domain:] = onp.reshape(val, (N_test, N_domain+N_boundary))
-        
+        return Theta_test
     elif eqn == 'Burgers':
         Theta_test = onp.zeros((N_test, 4*N_domain + N_boundary))
         # constructing Theta matrix
@@ -192,6 +246,7 @@ def construct_Theta_test(X_test, X_domain, X_boundary, eqn = 'Nonlinear_elliptic
         
         val = vmap(lambda x1, x2, y1, y2: K.kappa(x1, x2, y1, y2, kernel_parameter))(XXtdb0.flatten(),XXtdb1.flatten(),XXtdb0_2.flatten(),XXtdb1_2.flatten())
         Theta_test[:,3*N_domain:4*N_domain+N_boundary] = onp.reshape(val, (N_test, N_domain+N_boundary))
+        return Theta_test
     elif eqn == 'Eikonal':
         Theta_test = onp.zeros((N_test, 4*N_domain + N_boundary))
         val = vmap(lambda x1,x2,y1,y2: K.D_y1_kappa(x1, x2, y1, y2, kernel_parameter))(XXtd0.flatten(),XXtd1.flatten(),XXtd0_2.flatten(),XXtd1_2.flatten())
@@ -205,4 +260,31 @@ def construct_Theta_test(X_test, X_domain, X_boundary, eqn = 'Nonlinear_elliptic
         
         val = vmap(lambda x1,x2,y1,y2: K.kappa(x1, x2, y1, y2, kernel_parameter))(XXtdb0.flatten(),XXtdb1.flatten(),XXtdb0_2.flatten(),XXtdb1_2.flatten())
         Theta_test[:, 3*N_domain:] = onp.reshape(val, (N_test, N_domain+N_boundary))
-    return Theta_test
+        return Theta_test
+    elif eqn == 'Darcy_flow2d':
+        Theta_a_test = onp.zeros((N_test, 3*N_domain))
+        Theta_u_test = onp.zeros((N_test, 4*N_domain+N_boundary))
+        
+         # constructing Theta_a_test matrix
+        val = vmap(lambda x1,x2,y1,y2: K.D_y1_kappa(x1, x2, y1, y2, kernel_parameter))(XXtd0.flatten(),XXtd1.flatten(),XXtd0_2.flatten(),XXtd1_2.flatten())
+        Theta_a_test[:,:N_domain] = onp.reshape(val, (N_test, N_domain))
+        
+        val = vmap(lambda x1,x2,y1,y2: K.D_y2_kappa(x1, x2, y1, y2, kernel_parameter))(XXtd0.flatten(),XXtd1.flatten(),XXtd0_2.flatten(),XXtd1_2.flatten())
+        Theta_a_test[:,N_domain:2*N_domain] = onp.reshape(val, (N_test, N_domain))
+        
+        val = vmap(lambda x1,x2,y1,y2: K.kappa(x1, x2, y1, y2, kernel_parameter))(XXtd0.flatten(),XXtd1.flatten(),XXtd0_2.flatten(),XXtd1_2.flatten())
+        Theta_a_test[:,2*N_domain:] = onp.reshape(val, (N_test, N_domain))
+        
+        # constructing Theta_u_test matrix
+        val = vmap(lambda x1,x2,y1,y2: K.D_y1_kappa(x1, x2, y1, y2, kernel_parameter))(XXtd0.flatten(),XXtd1.flatten(),XXtd0_2.flatten(),XXtd1_2.flatten())
+        Theta_u_test[:,:N_domain] = onp.reshape(val, (N_test, N_domain))
+        
+        val = vmap(lambda x1,x2,y1,y2: K.D_y2_kappa(x1, x2, y1, y2, kernel_parameter))(XXtd0.flatten(),XXtd1.flatten(),XXtd0_2.flatten(),XXtd1_2.flatten())
+        Theta_u_test[:,N_domain:2*N_domain] = onp.reshape(val, (N_test, N_domain))
+        
+        val = vmap(lambda x1,x2,y1,y2: K.Delta_y_kappa(x1, x2, y1, y2, kernel_parameter))(XXtd0.flatten(),XXtd1.flatten(),XXtd0_2.flatten(),XXtd1_2.flatten())
+        Theta_u_test[:,2*N_domain:3*N_domain] = onp.reshape(val, (N_test, N_domain))
+        
+        val = vmap(lambda x1,x2,y1,y2: K.kappa(x1, x2, y1, y2, kernel_parameter))(XXtdb0.flatten(),XXtdb1.flatten(),XXtdb0_2.flatten(),XXtdb1_2.flatten())
+        Theta_u_test[:,3*N_domain:] = onp.reshape(val, (N_test, N_domain+N_boundary))
+        return Theta_u_test, Theta_a_test

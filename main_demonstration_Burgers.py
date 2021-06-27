@@ -6,7 +6,7 @@ from jax.config import config;
 config.update("jax_enable_x64", True)
 import numpy as onp
 # solver
-from solver import solver_PDE
+from solver import solver_GP
 # dict to class attribute for configuration (cfg) file
 import munch
 
@@ -32,7 +32,7 @@ show_figure = True # whether to show solution and loss figures
 # step 0: initialize the solver
 alpha = cfg_Burgers.alpha
 nu = cfg_Burgers.nu
-solver = solver_PDE(cfg_Burgers, PDE_type = "Burgers")
+solver = solver_GP(cfg_Burgers, PDE_type = "Burgers")
 
 # step 1: set the equation, rhs, bdy
 def u(x1, x2):

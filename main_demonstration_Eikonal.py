@@ -5,7 +5,7 @@ from jax.config import config;
 config.update("jax_enable_x64", True)
 import numpy as onp
 # solver
-from solver import solver_PDE
+from solver import solver_GP
 from standard_solver.Cole_Hopf_for_Eikonal import solve_Eikonal
 # dict to class attribute for configuration (cfg) file
 import munch
@@ -29,7 +29,7 @@ cfg_Eikonal =munch.munchify({
 show_figure = True # whether to show solution and loss figures
 
 # step 0: initialize the solver
-solver = solver_PDE(cfg_Eikonal, PDE_type = "Eikonal")
+solver = solver_GP(cfg_Eikonal, PDE_type = "Eikonal")
 
 # step 1: set the equation, rhs, bdy
 def u(x1, x2):
