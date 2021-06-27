@@ -42,7 +42,7 @@ fmt = ticker.ScalarFormatter(useMathText=True)
 fmt.set_powerlimits((0, 0))
 
 
-# solving nonlinear elliptic (NLE): -Delta u + alpha*u^m = f in [0,1]^2
+# solving Darcy flow -div(a grad u) = f
 cfg_Darcy_flow2d =munch.munchify({
     # kernel selection
     'kernel': 'Gaussian', 
