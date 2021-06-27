@@ -7,7 +7,7 @@ config.update("jax_enable_x64", True)
 import numpy as onp
 
 # equation
-from PDEs import Nonlinear_elliptic2d, Burgers
+from PDEs import Nonlinear_elliptic2d, Burgers, Eikonal
 
 # visulization: plot figures
 import matplotlib.pyplot as plt
@@ -52,6 +52,22 @@ class solver_PDE(object):
                 print(f'[Equation domain] [{domain[0,0]},{domain[0,1]}]*[{domain[1,0]},{domain[1,1]}]')
                 print(f'[Equation parameter] alpha = {self.config.alpha}, m = {self.config.m}')
                 print('[Equation data] Right hand side and boundary values set by the user')
+        elif self.PDE_type == "Burgers":
+            self.eqn = Burgers(alpha = self.config.alpha, nu = self.config.nu, bdy = bdy, rhs = rhs, domain = domain)
+            if print_option:
+                print('[Equation type] Burgers equation')
+                print('[Equation form] u_t+ alpha u u_x- nu u_xx=0')
+                print(f'[Equation domain] [{domain[0,0]},{domain[0,1]}]*[{domain[1,0]},{domain[1,1]}]')
+                print(f'[Equation parameter] alpha = {self.config.alpha}, m = {self.config.nu}')
+                print('[Equation data] Right hand side and boundary values set by the user')
+        elif self.PDE_type == "Eikonal":
+            self.eqn = Eikonal(eps = self.config.eps, bdy = bdy, rhs = rhs, domain = domain)
+            if print_option:
+                print('[Equation type] Eikonal equation')
+                print('[Equation form] |grad u|^2 = f + eps*Delta u')
+                print(f'[Equation domain] [{domain[0,0]},{domain[0,1]}]*[{domain[1,0]},{domain[1,1]}]')
+                print(f'[Equation parameter] eps = {self.config.eps}')
+                print('[Equation data] Right hand side and boundary values set by the user')
                 
     def get_sample(self, X_domain, X_boundary, print_option = True):
         # sampling points
@@ -65,6 +81,7 @@ class solver_PDE(object):
         if print_option:
             print(f'[Sample points] Collocation points sampled, type {sampled_type}')
             print(f'[Sample points] N_domain = {self.eqn.N_domain}, N_boundary = {self.eqn.N_boundary}')
+            
     def show_sample(self):
         fig = plt.figure()
         ax = fig.add_subplot(111)
@@ -93,7 +110,8 @@ class solver_PDE(object):
         self.eqn.GN_method(max_iter = self.config.max_iter, step_size = self.config.step_size, initial_sol = self.config.initial_sol, print_hist = self.config.print_hist)
         if print_option:
             print('[Gauss Newton] Gauss Newton iteration finished')
-    def get_loss_hist(self):
+            
+    def show_loss_hist(self):
         fig = plt.figure()
         plt.plot(jnp.arange(self.eqn.max_iter+1),self.eqn.loss_hist)
         plt.yscale("log")
