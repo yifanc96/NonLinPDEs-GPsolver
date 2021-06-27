@@ -18,7 +18,7 @@ cfg_NLE =munch.munchify({
     # kernel selection
     'kernel': 'Gaussian', 
     'kernel_parameter': 0.2,
-    'nugget': 1e-10,
+    'nugget': 1e-13,
     'nugget_type': 'adaptive',
     # optimiation
     'max_iter': 4, 

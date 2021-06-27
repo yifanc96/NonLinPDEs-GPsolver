@@ -12,6 +12,7 @@ from numpy import random
 from sample_points import sampled_pts_rdm, sampled_pts_grid
 from Gram_matrice import Gram_matrix_assembly, construct_Theta_test
 
+import sys
 class Nonlinear_elliptic2d(object):
     def __init__(self, alpha = 1.0, m = 3, bdy =None, rhs=None, domain=onp.array([[0,1],[0,1]])):
         # default -Delta u + alpha*u^m = f in [0,1]^2
@@ -70,8 +71,12 @@ class Nonlinear_elliptic2d(object):
             self.Theta = Theta
     
     def Gram_Cholesky(self):
-        self.L = jnp.linalg.cholesky(self.Theta)
-    
+        try:
+            self.L = jnp.linalg.cholesky(self.Theta)
+        except:
+            print('[Error] Cholesky factorization failed: maybe nugget is too small!')
+            sys.exit()
+            
     def loss(self, z):
         zz = jnp.append(self.alpha*(z**self.m) - self.rhs_f, z) 
         zz = jnp.append(zz, self.bdy_g)
@@ -97,7 +102,9 @@ class Nonlinear_elliptic2d(object):
         loss_hist = [] # history of loss function values
         loss_now = self.loss(sol)
         loss_hist.append(loss_now)
-        
+        if jnp.isnan(loss_now):
+            print('[Error] Loss is nan: maybe nugget is too small!')
+            sys.exit()
         if print_hist:
             print('iter = 0', 'Loss =', loss_now) # print out history
         
@@ -105,6 +112,9 @@ class Nonlinear_elliptic2d(object):
             temp = jnp.linalg.solve(self.Hessian_GN(sol,sol), self.grad_loss(sol))
             sol = sol - step_size*temp  
             loss_now = self.loss(sol)
+            if jnp.isnan(loss_now):
+                print('[Error] Loss is nan: maybe nugget is too small!')
+                sys.exit()
             loss_hist.append(loss_now)
             if print_hist:
                 # print out history
@@ -185,7 +195,11 @@ class Burgers(object):
             self.Theta = Theta
     
     def Gram_Cholesky(self):
-        self.L = jnp.linalg.cholesky(self.Theta)
+        try:
+            self.L = jnp.linalg.cholesky(self.Theta)
+        except:
+            print('[Error] Cholesky factorization failed: maybe nugget is too small!')
+            sys.exit()
     
     def loss(self,z):
         v0 = z[:self.N_domain]
@@ -222,6 +236,9 @@ class Burgers(object):
         self.init_sol = sol
         loss_hist = [] # history of loss function values
         loss_now = self.loss(sol)
+        if jnp.isnan(loss_now):
+            print('[Error] Loss is nan: maybe nugget is too small!')
+            sys.exit()
         loss_hist.append(loss_now)
         
         if print_hist:
@@ -231,6 +248,9 @@ class Burgers(object):
             temp = jnp.linalg.solve(self.Hessian_GN(sol), self.grad_loss(sol))
             sol = sol - step_size*temp  
             loss_now = self.loss(sol)
+            if jnp.isnan(loss_now):
+                print('[Error] Loss is nan: maybe nugget is too small!')
+                sys.exit()
             loss_hist.append(loss_now)
             if print_hist:
                 # print out history
@@ -311,7 +331,11 @@ class Eikonal(object):
             self.Theta = Theta
     
     def Gram_Cholesky(self):
-        self.L = jnp.linalg.cholesky(self.Theta)
+        try:
+            self.L = jnp.linalg.cholesky(self.Theta)
+        except:
+            print('[Error] Cholesky factorization failed: maybe nugget is too small!')
+            sys.exit()
     
     def loss(self, z):
         v0 = z[:self.N_domain]
@@ -354,6 +378,9 @@ class Eikonal(object):
         self.init_sol = sol
         loss_hist = [] # history of loss function values
         loss_now = self.loss(sol)
+        if jnp.isnan(loss_now):
+            print('[Error] Loss is nan: maybe nugget is too small!')
+            sys.exit()
         loss_hist.append(loss_now)
         
         if print_hist:
@@ -363,6 +390,9 @@ class Eikonal(object):
             temp = jnp.linalg.solve(self.Hessian_GN(sol,sol), self.grad_loss(sol))
             sol = sol - step_size*temp  
             loss_now = self.loss(sol)
+            if jnp.isnan(loss_now):
+                print('[Error] Loss is nan: maybe nugget is too small!')
+                sys.exit()
             loss_hist.append(loss_now)
             if print_hist:
                 # print out history

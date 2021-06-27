@@ -48,6 +48,7 @@ class solver_GP(object):
         if self.PDE_type == "Nonlinear_elliptic":
             self.eqn = Nonlinear_elliptic2d(alpha = self.config.alpha, m = self.config.m, bdy = bdy, rhs = rhs, domain = domain)
             if print_option:
+                print('\n Solver started')
                 print('[Equation type] Nonlinear elliptic equation')
                 print('[Equation form] - \Delta u + alpha*u^m = f')
                 print(f'[Equation domain] [{domain[0,0]},{domain[0,1]}]*[{domain[1,0]},{domain[1,1]}]')
