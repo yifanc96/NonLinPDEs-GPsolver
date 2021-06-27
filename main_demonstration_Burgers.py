@@ -10,7 +10,7 @@ from solver import solver_GP
 # dict to class attribute for configuration (cfg) file
 import munch
 
-# solving nonlinear elliptic (NLE): -Delta u + alpha*u^m = f in [0,1]^2
+# solving Burgers: u_t+ alpha u u_x- nu u_xx=0
 cfg_Burgers =munch.munchify({
     # basic set-up for equations
     'alpha': 1,

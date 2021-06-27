@@ -10,7 +10,7 @@ from standard_solver.Cole_Hopf_for_Eikonal import solve_Eikonal
 # dict to class attribute for configuration (cfg) file
 import munch
 
-# solving nonlinear elliptic (NLE): -Delta u + alpha*u^m = f in [0,1]^2
+# solving regularized Eikonal: |grad u|^2 = f + eps*Delta u
 cfg_Eikonal =munch.munchify({
     # basic set-up for equations
     'eps': 1e-1,
@@ -64,3 +64,5 @@ XX, YY, test_truth = solve_Eikonal(N_pts-2, cfg_Eikonal.eps)
 solver.get_test_error(test_truth.flatten())
 if show_figure:
     solver.contour_of_test_err(XX,YY)
+
+# %%
