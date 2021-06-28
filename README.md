@@ -2,21 +2,23 @@
 Code for the paper [Solving and Learning Nonlinear PDEs with Gaussian Processes](https://arxiv.org/abs/2103.12959)
 
 Packages required: [JAX](https://github.com/google/jax), [munch](https://github.com/Infinidat/munch)
-- JAX is used for automatic differentiation and vectorization of the constriction of Gram matrices, and the Gauss-Newton iteration. They can be avoid if the users supplement the derivatives manually.
-- Note: Codes may plot some figures along with its execution. Please make sure latex is supported in the machine environment, otherwise you may need to change the plot configuration in the code manually.
+- [JAX](https://github.com/google/jax) is used for automatic differentiation and vectorization of the constriction of Gram matrices, and the Gauss-Newton iteration. It can be avoid if the users supplement the derivatives manually.
+- Note: Codes may plot some figures along with its execution. Please make sure *latex* is supported in the machine environment, otherwise you may need to change the plot configuration in the code manually.
 
-**For demonstration of use in solving PDEs and inverse problems covered in the paper**: run or modify the configuration dictionary in the following files
+### For demonstration of use in solving PDEs and inverse problems covered in the paper 
+Run or modify the configuration dictionary in the following files
 - `main_demonstration_Elliptic.py`
 - `main_demonstration_Burgers.py`
 - `main_demonstration_Eikonal.py`
 - `main_demonstration_Darcy_flow2d.py`
 
-**For error curve analysis regarding the number of collocation points**: run or modify the configuration dictionary in the following
+### For error curve analysis regarding the number of collocation points 
+Run or modify the configuration dictionary in the following
 - `main_elliptic_err_curve`
 - `main_Burgers_err_curve`
 - `main_Eikonal_err_curve`
 
-**The architecture of this code**:
+### The architecture of this code
 - `PDEs.py` contains PDEs classes with built-in methods that are used to run our algorithm, while InverseProblems.py contains the corresponding part for inverse problems
 - `sample_points.py` provides several ways of sampling collocation points; users can also provide their own setting of collocation points
 - `kernels.py` provides a collection of kernel functions and their derivatives
