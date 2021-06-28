@@ -5,3 +5,4 @@ __pycache__/
 
 *.pdf
 *.npz
+test_*.py

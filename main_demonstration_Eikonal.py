@@ -17,10 +17,10 @@ cfg_Eikonal =munch.munchify({
     # kernel selection
     'kernel': 'Gaussian', 
     'kernel_parameter': 0.2,
-    'nugget': 1e-10,
+    'nugget': 1e-12,
     'nugget_type': 'adaptive',
     # optimiation
-    'max_iter': 8, 
+    'max_iter': 12, 
     'step_size': 1,
     'initial_sol': 'rdm', 
     'print_hist' : True,  # print training loss history
@@ -40,8 +40,8 @@ solver.set_equation(bdy = u, rhs = f, domain=onp.array([[0,1],[0,1]]))
 
 # step 2: sample points
 # we use automatic random sampling here
-N_domain = 900
-N_boundary = 124
+N_domain = 1080
+N_boundary = 120
 solver.auto_sample(N_domain, N_boundary, sampled_type = 'random')
 if show_figure:
     solver.show_sample()  # show the scattered figure of the sample

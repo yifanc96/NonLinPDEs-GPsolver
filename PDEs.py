@@ -1,6 +1,9 @@
 # JAX
 import jax.numpy as jnp
 from jax import grad, vmap, hessian
+
+# from jax import jit # test just in time compilation
+# from functools import partial
 import jax.ops as jop
 from jax.config import config; 
 config.update("jax_enable_x64", True)
@@ -76,22 +79,26 @@ class Nonlinear_elliptic2d(object):
         except:
             print('[Error] Cholesky factorization failed: maybe nugget is too small!')
             sys.exit()
-            
+    
+    #@partial(jit, static_argnums=(0,))   
     def loss(self, z):
         zz = jnp.append(self.alpha*(z**self.m) - self.rhs_f, z) 
         zz = jnp.append(zz, self.bdy_g)
         zz = jnp.linalg.solve(self.L, zz)
         return jnp.dot(zz, zz)
     
+    #@partial(jit, static_argnums=(0,))
     def grad_loss(self, z):
         return grad(self.loss)(z)
     
+    #@partial(jit, static_argnums=(0,))
     def GN_loss(self,z,z_old):
         zz = jnp.append(self.alpha*self.m*(z_old**(self.m-1))*(z-z_old), z) 
         zz = jnp.append(zz, self.bdy_g)
         zz = jnp.linalg.solve(self.L, zz)
         return jnp.dot(zz, zz)
     
+    #@partial(jit, static_argnums=(0,))
     def Hessian_GN(self,z,z_old):
         return hessian(self.GN_loss)(z,z_old)
     
