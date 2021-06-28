@@ -19,9 +19,9 @@ Run or modify the configuration dictionary in the following
 - `main_Eikonal_err_curve`
 
 ### The architecture of this code
-- `PDEs.py` contains PDEs classes with built-in methods that are used to run our algorithm, while InverseProblems.py contains the corresponding part for inverse problems
+- `PDEs.py` contains PDEs classes with built-in methods that are used to run our algorithm, while `InverseProblems.py `contains the corresponding part for inverse problems
 - `sample_points.py` provides several ways of sampling collocation points; users can also provide their own setting of collocation points
 - `kernels.py` provides a collection of kernel functions and their derivatives
 - `Gram_matrice.py` constructs the kernel matrix used in training and testing stages for our GP based method
 - `solver.py` contains a high level class that integrate the above three files to run the algorithms for any PDEs and inverse problems
-- Folder standard_solver contains several classical solvers for these PDEs, which are used for comparison purposes
+- Folder `standard_solver` contains several classical solvers for these PDEs, which are used for comparison purposes
