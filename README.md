@@ -1,8 +1,8 @@
 # NonlinearPDEs_GPsolver
 Code for the paper [Solving and Learning Nonlinear PDEs with Gaussian Processes](https://arxiv.org/abs/2103.12959)
 
-Packages required: JAX, munch
-- JAX is used for automatic differentiation and vectorization of the constriction of Gram matrices, and the Gauss-Newton iteration.
+Packages required: [JAX](https://github.com/google/jax), [munch](https://github.com/Infinidat/munch)
+- JAX is used for automatic differentiation and vectorization of the constriction of Gram matrices, and the Gauss-Newton iteration. They can be avoid if the users supplement the derivatives manually.
 - Note: Codes may plot some figures along with its execution. Please make sure latex is supported in the machine environment, otherwise you may need to change the plot configuration in the code manually.
 
 **For demonstration of use in solving PDEs and inverse problems covered in the paper**: run or modify the configuration dictionary in the following files
