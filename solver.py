@@ -136,7 +136,7 @@ class solver_GP(object):
             print('[Observed Data] Get observed data from solving the PDE using FD and interpolation')
             print(f'[Observed Data] Noise level {noise_level}')
         
-    def solve(self, print_option=True):
+    def solve(self, method = 'elimination', pen_lambda = 1e-10, print_option=True):
         if print_option:
             print('[Kernel] ' + self.config.kernel)
             print(f'[Kernel parameter]: {self.config.kernel_parameter}')
@@ -151,7 +151,11 @@ class solver_GP(object):
         # GN algorithm
         if print_option:
             print('[Gauss Newton] Start Gauss Newton iteration')
-        self.eqn.GN_method(max_iter = self.config.max_iter, step_size = self.config.step_size, initial_sol = self.config.initial_sol, print_hist = self.config.print_hist)
+            print(f'[Gauss Newton] {method} approaches')
+        if method == 'elimination':
+            self.eqn.GN_method(max_iter = self.config.max_iter, step_size = self.config.step_size, initial_sol = self.config.initial_sol, print_hist = self.config.print_hist)
+        elif method == 'relaxation':
+            self.eqn.GN_relaxed_method(max_iter = self.config.max_iter, step_size = self.config.step_size, initial_sol = self.config.initial_sol, pen_lambda = pen_lambda, print_hist = self.config.print_hist)
         if print_option:
             print('[Gauss Newton] Gauss Newton iteration finished')
             
@@ -181,6 +185,7 @@ class solver_GP(object):
     
     def get_test_error(self, truth, print_option = True):
         # truth is the true value of the function on X_test
+        self.truth = truth
         self.test_err_all= abs(truth-self.eqn.extended_sol)
         self.test_max_err = jnp.max(self.test_err_all)
         self.test_L2_err = jnp.sqrt(jnp.sum(self.test_err_all**2) / (self.eqn.N_test))
@@ -192,9 +197,10 @@ class solver_GP(object):
         fig = plt.figure()
         ax = fig.add_subplot(111)
         err_contourf=ax.contourf(XX, YY, self.test_err_all.reshape(XX.shape), 50, cmap=plt.cm.coolwarm)
+        self.XX = XX
+        self.YY = YY
         plt.xlabel('$x_1$')
         plt.ylabel('$x_2$')
         plt.title('Contour of errors')
         fig.colorbar(err_contourf, format=fmt)
         plt.show()
-        

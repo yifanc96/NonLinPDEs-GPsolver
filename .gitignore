@@ -5,4 +5,6 @@ __pycache__/
 
 *.pdf
 *.npz
-test_*.py
+test_*
+.ipynb*/
+data*

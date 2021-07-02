@@ -23,14 +23,14 @@ class error_curve(object):
         self.Maxerr = onp.zeros((num_random,self.arr_num))
         self.config = []
 
-arr_N_domain = [1200-120,1800-180,2400-240,3000-300]
-arr_N_boundary = [120,180,240,300]
+arr_N_domain = [300-30,600-60,1200-120,2400-240]
+arr_N_boundary = [30,60,180,120,240]
 
 print('\n [Goal] error curve for Eikonal equations')
 print(f'[Setting] random sampling, array of N_domain {arr_N_domain}, array of N_boundary {arr_N_boundary}')
 print('[Setting] eps=1e-1')
-err_Eikonal_nugget1e_5 = error_curve(arr_N_domain, arr_N_boundary, num_random = 50)
-err_Eikonal_nugget1e_10 = error_curve(arr_N_domain, arr_N_boundary, num_random = 50)
+err_Eikonal_nugget1e_5 = error_curve(arr_N_domain, arr_N_boundary, num_random = 10)
+err_Eikonal_nugget1e_10 = error_curve(arr_N_domain, arr_N_boundary, num_random = 10)
 
 # solving regularized Eikonal: |grad u|^2 = f + eps*Delta u
 cfg_Eikonal =munch.munchify({
@@ -42,17 +42,22 @@ cfg_Eikonal =munch.munchify({
     'nugget': 1e-10,
     'nugget_type': 'adaptive',
     # optimiation
-    'max_iter': 16, 
+    'max_iter': 20, 
     'step_size': 1,
     'initial_sol': 'rdm', 
     'print_hist' : True,  # print training loss history
 })
 
 # True solution:
-N_pts = 60
-XX, YY, test_truth = solve_Eikonal(N_pts-2, cfg_Eikonal.eps)
+N_pts = 1999
+XX, YY, fine_scale_truth = solve_Eikonal(N_pts, cfg_Eikonal.eps)
+test_truth = fine_scale_truth[19:-1:20, 19:-1:20]
+N_test = 99
+hg = 1/(N_test+1)
+x_grid = (onp.arange(1,N_test+1,1))*hg
+XX, YY = onp.meshgrid(x_grid, x_grid)
 X_test = jnp.concatenate((XX.reshape(-1,1),YY.reshape(-1,1)), axis=1)
-
+assert X_test.shape[0] == test_truth.shape[0] * test_truth.shape[1]
 # Equation:
 def u(x1, x2):
     return 0
@@ -77,7 +82,8 @@ for iter in range(err_Eikonal_nugget1e_5.arr_num):
     # get the configuration
     cfg = copy.copy(cfg_Eikonal)
     cfg.nugget = 1e-5
-    cfg.kernel_parameter = 1/jnp.sqrt(jnp.sqrt(N_domain+N_boundary))
+    # cfg.kernel_parameter = 1/jnp.sqrt(jnp.sqrt(N_domain+N_boundary))
+    cfg.kernel_parameter = 0.2
     err_Eikonal_nugget1e_5.config.append(cfg)
     for iter_rdm in range(err_Eikonal_nugget1e_5.num_random):
         # sampled points
@@ -104,4 +110,8 @@ for iter in range(err_Eikonal_nugget1e_10.arr_num):
         err_Eikonal_nugget1e_10.Maxerr[iter_rdm,iter] = pts_max_err
         print(f'\n random trial: {iter_rdm}/{err_Eikonal_nugget1e_5.num_random} finished \n ')
 # save
-onp.savez('data_Eikonal_convergence_curve.npz', err_Eikonal_nugget1e_5 = err_Eikonal_nugget1e_5, err_Eikonal_nugget1e_10=err_Eikonal_nugget1e_10)
+
+import pickle
+with open('data_Eikonal_convergence_curve.pkl', 'wb') as file_name:
+    pickle.dump(err_Eikonal_nugget1e_5, file_name)
+    pickle.dump(err_Eikonal_nugget1e_10, file_name)

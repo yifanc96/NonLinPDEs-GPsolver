@@ -15,6 +15,8 @@ Run or modify the configuration dictionary in the following files
 ### For error curve analysis regarding the number of collocation points 
 Run or modify the configuration dictionary in the following
 - `main_elliptic_err_curve.py`
+- `main_compare_elimination_relaxation.py`
+- `main_test_nugget_effect.py`
 - `main_Burgers_err_curve.py`
 - `main_Eikonal_err_curve.py`
 

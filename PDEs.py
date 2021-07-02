@@ -111,7 +111,7 @@ class Nonlinear_elliptic2d(object):
         loss_hist.append(loss_now)
         if jnp.isnan(loss_now):
             print('[Error] Loss is nan: maybe nugget is too small!')
-            sys.exit()
+            # sys.exit()
         if print_hist:
             print('iter = 0', 'Loss =', loss_now) # print out history
         
@@ -121,7 +121,7 @@ class Nonlinear_elliptic2d(object):
             loss_now = self.loss(sol)
             if jnp.isnan(loss_now):
                 print('[Error] Loss is nan: maybe nugget is too small!')
-                sys.exit()
+                # sys.exit()
             loss_hist.append(loss_now)
             if print_hist:
                 # print out history
@@ -135,6 +135,67 @@ class Nonlinear_elliptic2d(object):
         self.sol_vec = sol_vec
         self.sol_sampled_pts = sol
     
+    def loss_relaxed(self, z, pen_lambda):
+        v = z[:self.N_domain]
+        w = z[self.N_domain:]
+        temp = jnp.append(v, w) 
+        temp = jnp.append(temp, self.bdy_g)
+        ss = jnp.linalg.solve(self.L, temp)
+        
+        ss2 = -v+self.alpha*(w**(self.m))-self.rhs_f
+    
+        return jnp.dot(ss, ss) + jnp.dot(ss2,ss2)/pen_lambda
+    def grad_loss_relaxed(self, z, pen_lambda):
+        return grad(self.loss_relaxed)(z, pen_lambda)
+    
+    # linearized loss function: used for GN method
+    def GN_loss_relaxed(self, z,z_old, pen_lambda):
+        v = z[:self.N_domain]
+        w = z[self.N_domain:]
+        w_old = z_old[self.N_domain:]
+        temp = jnp.append(v, w) 
+        temp = jnp.append(temp, self.bdy_g)
+        ss = jnp.linalg.solve(self.L, temp)
+        
+        ss2 = -v+self.alpha*self.m*(w_old**(self.m-1))*(w-w_old)-self.rhs_f
+        
+        return jnp.dot(ss, ss) + jnp.dot(ss2,ss2)/pen_lambda
+    
+    def Hessian_GN_relaxed(self,z,z_old, pen_lambda):
+        return hessian(self.GN_loss_relaxed)(z,z_old, pen_lambda)
+    
+    def GN_relaxed_method(self, max_iter = 3, step_size = 1, initial_sol = 'rdm', pen_lambda = 1e-10, print_hist = True):
+        print(f'Relaxed approach: penalization parameter = {pen_lambda}')
+        if initial_sol == 'rdm':
+            sol = random.normal(0.0, 1.0, (2*self.N_domain))
+        self.init_sol = sol
+        loss_hist = [] # history of loss function values
+        loss_now = self.loss_relaxed(sol, pen_lambda)
+        loss_hist.append(loss_now)
+        if jnp.isnan(loss_now):
+            print('[Error] Loss is nan: maybe nugget is too small!')
+            # sys.exit()
+        if print_hist:
+            print('iter = 0', 'Loss =', loss_now) # print out history
+        
+        for iter_step in range(1, max_iter+1):
+            temp = jnp.linalg.solve(self.Hessian_GN_relaxed(sol,sol,pen_lambda), self.grad_loss_relaxed(sol, pen_lambda))
+            sol = sol - step_size*temp  
+            loss_now = self.loss_relaxed(sol, pen_lambda)
+            if jnp.isnan(loss_now):
+                print('[Error] Loss is nan: maybe nugget is too small!')
+                # sys.exit()
+            loss_hist.append(loss_now)
+            if print_hist:
+                # print out history
+                print('iter = ', iter_step, 'Gauss-Newton step size =', step_size, ' Loss = ', loss_now) 
+        self.max_iter = max_iter
+        self.step_size = step_size
+        self.loss_hist = loss_hist
+        sol_vec = jnp.append(sol, self.bdy_g)
+        self.sol_vec = sol_vec
+        self.sol_sampled_pts = sol[self.N_domain:]
+        
     def extend_sol(self,X_test):
         Theta_test = construct_Theta_test(X_test, self.X_domain, self.X_boundary, eqn = 'Nonlinear_elliptic', kernel = self.kernel, kernel_parameter = self.kernel_parameter)
         temp = jnp.linalg.solve(jnp.transpose(self.L),jnp.linalg.solve(self.L,self.sol_vec))
@@ -142,7 +203,7 @@ class Nonlinear_elliptic2d(object):
         self.N_test = X_test.shape[0]
         self.extended_sol = jnp.matmul(Theta_test,temp)
     
-        
+    
 class Burgers(object):
     def __init__(self, alpha = 1.0, nu = 0.2, bdy =None, rhs=None, domain=onp.array([[0,1],[-1,1]])):
         # default u_t+\alpha u u_x-\nu u_{xx}=0, x \in [-1,1], t \in [0,1] so domain (t,x) in [0,1]*[-1,1] 
@@ -245,7 +306,7 @@ class Burgers(object):
         loss_now = self.loss(sol)
         if jnp.isnan(loss_now):
             print('[Error] Loss is nan: maybe nugget is too small!')
-            sys.exit()
+            # sys.exit()
         loss_hist.append(loss_now)
         
         if print_hist:
@@ -257,7 +318,7 @@ class Burgers(object):
             loss_now = self.loss(sol)
             if jnp.isnan(loss_now):
                 print('[Error] Loss is nan: maybe nugget is too small!')
-                sys.exit()
+                # sys.exit()
             loss_hist.append(loss_now)
             if print_hist:
                 # print out history
@@ -387,7 +448,7 @@ class Eikonal(object):
         loss_now = self.loss(sol)
         if jnp.isnan(loss_now):
             print('[Error] Loss is nan: maybe nugget is too small!')
-            sys.exit()
+            # sys.exit()
         loss_hist.append(loss_now)
         
         if print_hist:
@@ -399,7 +460,7 @@ class Eikonal(object):
             loss_now = self.loss(sol)
             if jnp.isnan(loss_now):
                 print('[Error] Loss is nan: maybe nugget is too small!')
-                sys.exit()
+                # sys.exit()
             loss_hist.append(loss_now)
             if print_hist:
                 # print out history

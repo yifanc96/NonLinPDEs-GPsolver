@@ -17,7 +17,7 @@ def solve_Eikonal(N, epsilon):
     a_super1 = onp.reshape(onp.append(a1[:,1:N], onp.zeros((N,1)), axis = 1), (1,-1))
     a_super2 = onp.reshape(a2[1:N,:], (1,-1))
     
-    A = diags([[-a_super2[onp.newaxis, :]], [-a_super1[onp.newaxis, :]], [a_diag], [-a_super1[onp.newaxis, :]], [-a_super2[onp.newaxis, :]]], [-N,-1,0,1,N], shape=(N**2, N**2))
+    A = diags([[-a_super2[onp.newaxis, :]], [-a_super1[onp.newaxis, :]], [a_diag], [-a_super1[onp.newaxis, :]], [-a_super2[onp.newaxis, :]]], [-N,-1,0,1,N], shape=(N**2, N**2), format = 'csr')
     XX, YY = onp.meshgrid(x_grid, x_grid)
     f = onp.zeros((N,N))
     f[0,:] = f[0,:] + epsilon**2 / (hg**2)
@@ -29,6 +29,8 @@ def solve_Eikonal(N, epsilon):
     
     mtx = identity(N**2)+(epsilon**2)*A/(hg**2)
     sol_v = scipy.sparse.linalg.spsolve(mtx, fv)
+    # sol_v, exitCode = scipy.sparse.linalg.cg(mtx, fv)
+    # print(exitCode)
     sol_u = -epsilon*onp.log(sol_v)
     sol_u = onp.reshape(sol_u, (N,N))
     return XX, YY, sol_u

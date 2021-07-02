@@ -24,14 +24,17 @@ class error_curve(object):
         self.Maxerr = onp.zeros((num_random,self.arr_num))
         self.config = []
 
-arr_N_domain = [960,1440,1920,2400]
-arr_N_boundary = [240,360,480,600]
+# arr_N_domain = [960,1440,1920,2400]
+# arr_N_boundary = [240,360,480,600]
+
+arr_N_domain = [500,1000,2000,4000]
+arr_N_boundary = [100,200,400,800]
 
 print('\n [Goal] error curve for Burgers equations')
 print(f'[Setting] random sampling, array of N_domain {arr_N_domain}, array of N_boundary {arr_N_boundary}')
 print('[Setting] alpha = 1, nu = 0.02')
-err_Burgers_nugget1e_5 = error_curve(arr_N_domain, arr_N_boundary, num_random = 50)
-err_Burgers_nugget1e_10 = error_curve(arr_N_domain, arr_N_boundary, num_random = 50)
+err_Burgers_nugget1e_5 = error_curve(arr_N_domain, arr_N_boundary, num_random = 10)
+err_Burgers_nugget1e_10 = error_curve(arr_N_domain, arr_N_boundary, num_random = 10)
 
 # solving Burgers: u_t+ alpha u u_x- nu u_xx=0
 cfg_Burgers =munch.munchify({
@@ -44,7 +47,7 @@ cfg_Burgers =munch.munchify({
     'nugget': 1e-5,
     'nugget_type': 'adaptive',
     # optimiation
-    'max_iter': 16, 
+    'max_iter': 30, 
     'step_size': 1,
     'initial_sol': 'rdm', 
     'print_hist' : True,  # print training loss history
@@ -52,7 +55,7 @@ cfg_Burgers =munch.munchify({
 
 # True solution:
 nu = cfg_Burgers.nu
-[Gauss_pts, weights] = onp.polynomial.hermite.hermgauss(80)
+[Gauss_pts, weights] = onp.polynomial.hermite.hermgauss(200)
 def u_truth(x1, x2):
     temp = x2-jnp.sqrt(4*nu*x1)*Gauss_pts
     val1 = weights * jnp.sin(jnp.pi*temp) * jnp.exp(-jnp.cos(jnp.pi*temp)/(2*jnp.pi*nu))
@@ -116,4 +119,8 @@ for iter in range(err_Burgers_nugget1e_10.arr_num):
         err_Burgers_nugget1e_10.Maxerr[iter_rdm,iter] = pts_max_err
         print(f'\n random trial: {iter_rdm}/{err_Burgers_nugget1e_5.num_random} finished \n ')
 # save
-onp.savez('data_Burgers_convergence_curve.npz', err_Burgers_nugget1e_5 = err_Burgers_nugget1e_5, err_Burgers_nugget1e_10=err_Burgers_nugget1e_10)
+
+import pickle
+with open('data_Burgers_convergence_curve.pkl', 'wb') as file_name:
+    pickle.dump(err_Burgers_nugget1e_5, file_name)
+    pickle.dump(err_Burgers_nugget1e_10, file_name)
