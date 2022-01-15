@@ -7,7 +7,7 @@ Packages required: [JAX](https://github.com/google/jax)
 - Note: the algorithm in the paper https://arxiv.org/abs/2103.12959 can be optimized further to greatly improve the efficiency. Please follow up with our recent progress.
 
 ### For demonstration of use in solving PDEs and inverse problems covered in the paper 
-
+run the following in your terminal
 - `python main_NonLinElliptic2d.py --kernel Gaussian --kernel_parameter 0.2 --nugget 1e-13 --N_domain 900 --N_boundary 124 --GNsteps 4 --show_figure True`
   
 - `python main_Burgers1d.py --kernel anisotropic_Gaussian --kernel_parameter 0.3 0.05 --nugget 1e-5 --N_domain 1000 --N_boundary 200 --GNsteps 8 --show_figure True`
