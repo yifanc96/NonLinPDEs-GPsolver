@@ -7,8 +7,8 @@ config.update("jax_enable_x64", True)
 import numpy as onp
 
 # equation
-from PDEs import Nonlinear_elliptic2d, Burgers, Eikonal
-from InverseProblems import Darcy_flow2d
+from .PDEs import Nonlinear_elliptic2d, Burgers, Eikonal
+from .InverseProblems import Darcy_flow2d
 
 # visulization: plot figures
 import matplotlib.pyplot as plt
@@ -153,9 +153,9 @@ class solver_GP(object):
             print('[Gauss Newton] Start Gauss Newton iteration')
             print(f'[Gauss Newton] {method} approaches')
         if method == 'elimination':
-            self.eqn.GN_method(max_iter = self.config.max_iter, step_size = self.config.step_size, initial_sol = self.config.initial_sol, print_hist = self.config.print_hist)
+            self.eqn.GN_method(max_iter = self.config.GNsteps, step_size = self.config.step_size, initial_sol = self.config.initial_sol, print_hist = self.config.print_hist)
         elif method == 'relaxation':
-            self.eqn.GN_relaxed_method(max_iter = self.config.max_iter, step_size = self.config.step_size, initial_sol = self.config.initial_sol, pen_lambda = pen_lambda, print_hist = self.config.print_hist)
+            self.eqn.GN_relaxed_method(max_iter = self.config.GNsteps, step_size = self.config.step_size, initial_sol = self.config.initial_sol, pen_lambda = pen_lambda, print_hist = self.config.print_hist)
         if print_option:
             print('[Gauss Newton] Gauss Newton iteration finished')
             

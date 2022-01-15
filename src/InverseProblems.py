@@ -1,6 +1,8 @@
 # JAX
 import jax.numpy as jnp
-from jax import grad, vmap, hessian
+from jax import grad, vmap, hessian, jit
+from functools import partial
+
 import jax.ops as jop
 from jax.config import config; 
 config.update("jax_enable_x64", True)
@@ -9,18 +11,20 @@ config.update("jax_enable_x64", True)
 import numpy as onp
 from numpy import random 
 
-from sample_points import sampled_pts_rdm, sampled_pts_grid
-from Gram_matrice import Gram_matrix_assembly, construct_Theta_test
+from .sample_points import sampled_pts_rdm, sampled_pts_grid
+from .Gram_matrice import Gram_matrix_assembly, construct_Theta_test
 
 class Darcy_flow2d(object):
     def __init__(self, bdy =None, rhs=None, domain=onp.array([[0,1],[0,1]])):
         self.bdy = bdy
         self.rhs = rhs
         self.domain = domain
-        
+      
+    @partial(jit, static_argnums=(0,))  
     def get_bd(self, x1,x2):
         return self.bdy(x1,x2)
     
+    @partial(jit, static_argnums=(0,))
     def get_rhs(self, x1,x2):
         return self.rhs(x1,x2)
     
@@ -99,6 +103,7 @@ class Darcy_flow2d(object):
         self.L_u = jnp.linalg.cholesky(self.Theta_u)
         self.L_a = jnp.linalg.cholesky(self.Theta_a)
     
+    @partial(jit, static_argnums=(0,))
     def loss(self,z):
         w0 = z[0:self.N_domain]
         w1 = z[self.N_domain:2*self.N_domain]
@@ -115,9 +120,11 @@ class Darcy_flow2d(object):
         temp_u = jnp.linalg.solve(self.L_u,v_all)
         return jnp.dot(temp_a, temp_a) + jnp.dot(temp_u, temp_u) + (1/self.noise_level**2)*jnp.sum((v0[:self.N_data]-self.data_u)**2)
     
+    @partial(jit, static_argnums=(0,))
     def grad_loss(self, z):
         return grad(self.loss)(z)
     
+    @partial(jit, static_argnums=(0,))
     def GN_loss(self, z, z_old):
         w0_old = z_old[0:self.N_domain]
         w1_old = z_old[self.N_domain:2*self.N_domain]
@@ -139,7 +146,8 @@ class Darcy_flow2d(object):
         temp_a = jnp.linalg.solve(self.L_a,w_all)
         temp_u = jnp.linalg.solve(self.L_u,v_all)
         return jnp.dot(temp_a, temp_a) + jnp.dot(temp_u, temp_u) + (1/self.noise_level**2)*jnp.sum((v0[:self.N_data]-self.data_u)**2)
-
+    
+    @partial(jit, static_argnums=(0,))
     def Hessian_GN(self,z,z_old):
         return hessian(self.GN_loss)(z,z_old)
     

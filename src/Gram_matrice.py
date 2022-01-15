@@ -7,7 +7,7 @@ config.update("jax_enable_x64", True)
 
 # numpy
 import numpy as onp
-from kernels import Gaussian_kernel, Anisotropic_Gaussian_kernel
+from .kernels import Gaussian_kernel, Anisotropic_Gaussian_kernel
 
 def Gram_matrix_assembly(X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kernel = 'Gaussian', kernel_parameter = 0.2):
     N_domain = X_domain.shape[0]
@@ -36,7 +36,7 @@ def Gram_matrix_assembly(X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kerne
     
     if kernel == 'Gaussian':
         K = Gaussian_kernel()
-    elif kernel == 'anisotropic Gaussian':
+    elif kernel == 'anisotropic_Gaussian':
         K = Anisotropic_Gaussian_kernel()
             
     if eqn == 'Nonlinear_elliptic':
@@ -220,7 +220,7 @@ def construct_Theta_test(X_test, X_domain, X_boundary, eqn = 'Nonlinear_elliptic
     
     if kernel == 'Gaussian':
         K = Gaussian_kernel()
-    elif kernel == 'anisotropic Gaussian':
+    elif kernel == 'anisotropic_Gaussian':
         K = Anisotropic_Gaussian_kernel()
         
     # constructing Theta matrix

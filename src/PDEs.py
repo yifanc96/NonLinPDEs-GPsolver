@@ -1,9 +1,9 @@
 # JAX
 import jax.numpy as jnp
-from jax import grad, vmap, hessian
+from jax import grad, vmap, hessian, jit
 
-# from jax import jit # test just in time compilation
-# from functools import partial
+from functools import partial
+
 import jax.ops as jop
 from jax.config import config; 
 config.update("jax_enable_x64", True)
@@ -12,8 +12,8 @@ config.update("jax_enable_x64", True)
 import numpy as onp
 from numpy import random 
 
-from sample_points import sampled_pts_rdm, sampled_pts_grid
-from Gram_matrice import Gram_matrix_assembly, construct_Theta_test
+from .sample_points import sampled_pts_rdm, sampled_pts_grid
+from .Gram_matrice import Gram_matrix_assembly, construct_Theta_test
 
 import sys
 class Nonlinear_elliptic2d(object):
@@ -80,18 +80,18 @@ class Nonlinear_elliptic2d(object):
             print('[Error] Cholesky factorization failed: maybe nugget is too small!')
             sys.exit()
     
-    #@partial(jit, static_argnums=(0,))   
+    @partial(jit, static_argnums=(0,))   
     def loss(self, z):
         zz = jnp.append(self.alpha*(z**self.m) - self.rhs_f, z) 
         zz = jnp.append(zz, self.bdy_g)
         zz = jnp.linalg.solve(self.L, zz)
         return jnp.dot(zz, zz)
     
-    #@partial(jit, static_argnums=(0,))
+    @partial(jit, static_argnums=(0,))
     def grad_loss(self, z):
         return grad(self.loss)(z)
     
-    #@partial(jit, static_argnums=(0,))
+    @partial(jit, static_argnums=(0,))
     def GN_loss(self,z,z_old):
         zz = jnp.append(self.alpha*self.m*(z_old**(self.m-1))*(z-z_old), z) 
         zz = jnp.append(zz, self.bdy_g)
@@ -134,7 +134,8 @@ class Nonlinear_elliptic2d(object):
         sol_vec = jnp.append(sol_vec, self.bdy_g)
         self.sol_vec = sol_vec
         self.sol_sampled_pts = sol
-    
+        
+    @partial(jit, static_argnums=(0,))
     def loss_relaxed(self, z, pen_lambda):
         v = z[:self.N_domain]
         w = z[self.N_domain:]
@@ -145,9 +146,12 @@ class Nonlinear_elliptic2d(object):
         ss2 = -v+self.alpha*(w**(self.m))-self.rhs_f
     
         return jnp.dot(ss, ss) + jnp.dot(ss2,ss2)/pen_lambda
+    
+    @partial(jit, static_argnums=(0,))
     def grad_loss_relaxed(self, z, pen_lambda):
         return grad(self.loss_relaxed)(z, pen_lambda)
     
+    @partial(jit, static_argnums=(0,))
     # linearized loss function: used for GN method
     def GN_loss_relaxed(self, z,z_old, pen_lambda):
         v = z[:self.N_domain]
@@ -161,6 +165,7 @@ class Nonlinear_elliptic2d(object):
         
         return jnp.dot(ss, ss) + jnp.dot(ss2,ss2)/pen_lambda
     
+    @partial(jit, static_argnums=(0,))
     def Hessian_GN_relaxed(self,z,z_old, pen_lambda):
         return hessian(self.GN_loss_relaxed)(z,z_old, pen_lambda)
     
@@ -212,10 +217,12 @@ class Burgers(object):
         self.bdy = bdy
         self.rhs = rhs
         self.domain = domain
-        
+    
+    @partial(jit, static_argnums=(0,))
     def get_bd(self, x1,x2):
         return self.bdy(x1,x2)
     
+    @partial(jit, static_argnums=(0,))
     def get_rhs(self, x1,x2):
         return self.rhs(x1,x2)
     
@@ -241,7 +248,7 @@ class Burgers(object):
         self.rhs_f = vmap(self.get_rhs)(X_domain[:,0], X_domain[:,1])
         self.bdy_g = vmap(self.get_bd)(X_boundary[:,0], X_boundary[:,1])
         
-    def Gram_matrix(self, kernel = 'anisotropic Gaussian', kernel_parameter = [1/3,1/20], nugget = 1e-5, nugget_type = 'adaptive'):
+    def Gram_matrix(self, kernel = 'anisotropic_Gaussian', kernel_parameter = [1/3,1/20], nugget = 1e-5, nugget_type = 'adaptive'):
         Theta = Gram_matrix_assembly(self.X_domain, self.X_boundary, eqn = 'Burgers', kernel = kernel, kernel_parameter = kernel_parameter)
         self.nugget_type = nugget_type
         self.nugget = nugget
@@ -269,6 +276,7 @@ class Burgers(object):
             print('[Error] Cholesky factorization failed: maybe nugget is too small!')
             sys.exit()
     
+    @partial(jit, static_argnums=(0,))
     def loss(self,z):
         v0 = z[:self.N_domain]
         v2 = z[self.N_domain:2*self.N_domain]
@@ -281,7 +289,7 @@ class Burgers(object):
         temp = jnp.linalg.solve(self.L,vv)
         return jnp.dot(temp, temp)
 
-
+    @partial(jit, static_argnums=(0,))
     def grad_loss(self, z):
         return grad(self.loss)(z)
     
@@ -348,10 +356,12 @@ class Eikonal(object):
         self.bdy = bdy
         self.rhs = rhs
         self.domain = domain
-        
+    
+    @partial(jit, static_argnums=(0,))  
     def get_bd(self, x1,x2):
         return self.bdy(x1,x2)
     
+    @partial(jit, static_argnums=(0,))
     def get_rhs(self, x1,x2):
         return self.rhs(x1,x2)
     
@@ -405,6 +415,7 @@ class Eikonal(object):
             print('[Error] Cholesky factorization failed: maybe nugget is too small!')
             sys.exit()
     
+    @partial(jit, static_argnums=(0,))
     def loss(self, z):
         v0 = z[:self.N_domain]
         v1 = z[self.N_domain:2*self.N_domain]
@@ -418,9 +429,11 @@ class Eikonal(object):
         zz = jnp.linalg.solve(self.L,vv)
         return jnp.dot(zz, zz)
     
+    @partial(jit, static_argnums=(0,))
     def grad_loss(self, z):
         return grad(self.loss)(z)
     
+    @partial(jit, static_argnums=(0,))
     def GN_loss(self,z,z_old):
         v1_old = z_old[self.N_domain:2*self.N_domain]
         v2_old = z_old[2*self.N_domain:]
@@ -437,6 +450,7 @@ class Eikonal(object):
         zz = jnp.linalg.solve(self.L,vv)
         return jnp.dot(zz, zz)
     
+    @partial(jit, static_argnums=(0,))
     def Hessian_GN(self,z,z_old):
         return hessian(self.GN_loss)(z,z_old)
     
