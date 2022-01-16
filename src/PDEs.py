@@ -98,7 +98,7 @@ class Nonlinear_elliptic2d(object):
         zz = jnp.linalg.solve(self.L, zz)
         return jnp.dot(zz, zz)
     
-    #@partial(jit, static_argnums=(0,))
+    @partial(jit, static_argnums=(0,))
     def Hessian_GN(self,z,z_old):
         return hessian(self.GN_loss)(z,z_old)
     
@@ -293,6 +293,7 @@ class Burgers(object):
     def grad_loss(self, z):
         return grad(self.loss)(z)
     
+    @partial(jit, static_argnums=(0,))
     def Hessian_GN(self, z):
         v0 = z[:self.N_domain]
         v2 = z[self.N_domain:2*self.N_domain]

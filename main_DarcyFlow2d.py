@@ -9,6 +9,7 @@ from jax import grad, vmap
 from jax.config import config; 
 config.update("jax_enable_x64", True)
 import numpy as onp
+from numpy import random
 
 # solver
 from src.solver import solver_GP
@@ -73,12 +74,19 @@ def get_parser():
     # logs and visualization
     parser.add_argument("--print_hist", type=bool, default=True)
     parser.add_argument("--show_figure", type=bool, default=True)
+    parser.add_argument("--randomseed", type=int, default=9999)
     args = parser.parse_args()    
     
     return args
 
+def set_random_seeds(args):
+    random_seed = args.randomseed
+    random.seed(random_seed)
+
 # get the parameters
 cfg = get_parser()
+set_random_seeds(cfg)
+print(f"[Seeds] random seeds: {cfg.randomseed}")
 
 ###### step 0: initialize the solver
 solver = solver_GP(cfg, PDE_type = "Darcy_flow2d")

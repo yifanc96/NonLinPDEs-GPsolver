@@ -9,7 +9,7 @@ from jax import vmap, jit
 from jax.config import config; 
 config.update("jax_enable_x64", True)
 import numpy as onp
-
+from numpy import random
 # solver
 from src.solver import solver_GP
 
@@ -23,7 +23,7 @@ def get_parser():
     
     # kernel setting
     parser.add_argument("--kernel", type=str, default='anisotropic_Gaussian')
-    parser.add_argument("--kernel_parameter", type = float, nargs='+', default = [0.3,0.5])
+    parser.add_argument("--kernel_parameter", type = float, nargs='+', default = [0.3,0.05])
     parser.add_argument("--nugget", type = float, default = 1e-5)
     parser.add_argument("--nugget_type", type = str, default = "adaptive", choices = ["adaptive","identity", 'none'])
     
@@ -35,18 +35,26 @@ def get_parser():
     # GN iterations
     parser.add_argument("--method", type = str, default = 'elimination')
     parser.add_argument("--initial_sol", type = str, default = 'rdm')
-    parser.add_argument("--GNsteps", type=int, default=10)
+    parser.add_argument("--GNsteps", type=int, default=8)
     parser.add_argument("--step_size", type=int, default=1)
     
     # logs and visualization
     parser.add_argument("--print_hist", type=bool, default=True)
     parser.add_argument("--show_figure", type=bool, default=True)
+    
+    parser.add_argument("--randomseed", type=int, default=0)
     args = parser.parse_args()    
     
     return args
 
+def set_random_seeds(args):
+    random_seed = args.randomseed
+    random.seed(random_seed)
+
 # get the parameters
 cfg = get_parser()
+set_random_seeds(cfg)
+print(f"[Seeds] random seeds: {cfg.randomseed}")
 
 ##### step 0: initialize the solver
 alpha = cfg.alpha
