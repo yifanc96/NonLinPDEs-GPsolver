@@ -47,7 +47,7 @@ fmt.set_powerlimits((0, 0))
 
 # solving Darcy flow -div(a grad u) = f
 def get_parser():
-    parser = argparse.ArgumentParser(description='NonLinElliptic equation GP solver')
+    parser = argparse.ArgumentParser(description='Darcy Flow GP solver')
     
     # kernel setting
     parser.add_argument("--kernel", type=str, default='Gaussian')

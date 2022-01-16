@@ -14,7 +14,7 @@ from reference_solver.Cole_Hopf_for_Eikonal import solve_Eikonal
 
 # solving regularized Eikonal: |grad u|^2 = f + eps*Delta u
 def get_parser():
-    parser = argparse.ArgumentParser(description='NonLinElliptic equation GP solver')
+    parser = argparse.ArgumentParser(description='Eikonal equation GP solver')
     
     # equation parameters
     parser.add_argument("--eps", type=float, default = 1e-1)

@@ -15,7 +15,7 @@ from src.solver import solver_GP
 
 # solving Burgers: u_t+ alpha u u_x- nu u_xx=0
 def get_parser():
-    parser = argparse.ArgumentParser(description='NonLinElliptic equation GP solver')
+    parser = argparse.ArgumentParser(description='Burgers equation GP solver')
     
     # equation parameters
     parser.add_argument("--alpha", type=float, default = 1.0)
