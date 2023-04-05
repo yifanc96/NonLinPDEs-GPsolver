@@ -5,6 +5,7 @@ Packages required: [JAX](https://github.com/google/jax)
 - [JAX](https://github.com/google/jax) is used for automatic differentiation and vectorization of the constriction of Gram matrices, and the Gauss-Newton iteration. It can be avoid if the users supplement the derivatives manually.
 - Note: Codes may plot some figures along with its execution. Please make sure *latex* is supported in the machine environment, otherwise you may need to change the plot configuration in the code manually.
 - Note: the algorithm in the paper https://arxiv.org/abs/2103.12959 can be optimized further to greatly improve the efficiency. Please follow up with our recent progress.
+- The repo https://github.com/yifanc96/PDEs-GP-KoleskySolver presents a near linear complexity algorithm for the GP-PDE solver
 
 ### For demonstration of use in solving PDEs and inverse problems covered in the paper 
 run the following in your terminal
