@@ -32,7 +32,7 @@ def get_parser():
     
     # GN iterations
     parser.add_argument("--method", type = str, default = 'elimination')
-    parser.add_argument("--initial_sol", type = str, default = 'rdm')
+    parser.add_argument("--initial_sol", type = str, default = 'zero')
     parser.add_argument("--GNsteps", type=int, default=8)
     parser.add_argument("--step_size", type=int, default=1)
     

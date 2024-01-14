@@ -458,6 +458,8 @@ class Eikonal(object):
     def GN_method(self, max_iter = 3, step_size = 1, initial_sol = 'rdm', print_hist = True):
         if initial_sol == 'rdm':
             sol = random.normal(0.0, 1.0, (3*self.N_domain))
+        elif initial_sol == 'zero':
+            sol = onp.zeros(3*self.N_domain)
         self.init_sol = sol
         loss_hist = [] # history of loss function values
         loss_now = self.loss(sol)
