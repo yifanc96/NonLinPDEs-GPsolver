@@ -6,6 +6,7 @@ Packages required: [JAX](https://github.com/google/jax)
 - Note: Codes may plot some figures along with its execution. Please make sure *latex* is supported in the machine environment, otherwise you may need to change the plot configuration in the code manually.
 - Note: the algorithm in the paper https://arxiv.org/abs/2103.12959 can be optimized further to greatly improve the efficiency. Please follow up with our recent progress.
 - The repo https://github.com/yifanc96/PDEs-GP-KoleskySolver presents a near linear complexity algorithm for the GP-PDE solver
+- The repo https://github.com/yifanc96/GaussianProcessPDEs.jl presents simple demonstrations of other applications of this methodology
 
 ### For demonstration of use in solving PDEs and inverse problems covered in the paper 
 run the following in your terminal
