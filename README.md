@@ -1,5 +1,6 @@
 # NonlinearPDEs_GPsolver
-Code for the paper [Solving and Learning Nonlinear PDEs with Gaussian Processes](https://arxiv.org/abs/2103.12959)
+Code for the paper [Solving and Learning Nonlinear PDEs with Gaussian Processes](https://arxiv.org/abs/2103.12959) Solvers with the flavor of automation in scientific machine learning: a general framework for PDEs and inverse problems in science.
+
 
 Packages required: [JAX](https://github.com/google/jax)
 - [JAX](https://github.com/google/jax) is used for automatic differentiation and vectorization of the constriction of Gram matrices, and the Gauss-Newton iteration. It can be avoid if the users supplement the derivatives manually.
@@ -27,6 +28,5 @@ In the `src` folder:
 - `kernels.py` provides a collection of kernel functions and their derivatives
 - `Gram_matrice.py` constructs the kernel matrix used in training and testing stages for our GP based method
 - `solver.py` contains a high level class that integrate the above three files to run the algorithms for any PDEs and inverse problems
-- `notebook` contains demonstration codes in the Jupyter notebook style
 
 In addition, folder `reference_solver` contains several classical solvers for these PDEs, which are used for comparison purposes
