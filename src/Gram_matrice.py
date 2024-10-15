@@ -61,42 +61,42 @@ def Gram_matrix_assembly(X_domain, X_boundary, eqn = 'Nonlinear_elliptic', kerne
         Theta = jnp.zeros((4*N_domain + N_boundary, 4*N_domain + N_boundary))
         # interior v.s. interior 
         val = vmap(lambda x1, x2, y1, y2: K.D_x1_D_y1_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),jnp.transpose(XXdd0).flatten(),jnp.transpose(XXdd1).flatten())
-        Theta = jop.index_update(Theta, jop.index[0:N_domain, 0:N_domain], jnp.reshape(val, (N_domain, N_domain)))
+        Theta = Theta.at[0:N_domain, 0:N_domain].set(jnp.reshape(val, (N_domain, N_domain)))
         
         val = vmap(lambda x1, x2, y1, y2: K.D_x1_D_y2_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),jnp.transpose(XXdd0).flatten(),jnp.transpose(XXdd1).flatten())
-        Theta = jop.index_update(Theta, jop.index[0:N_domain, N_domain:2*N_domain], jnp.reshape(val, (N_domain, N_domain)))
-        Theta = jop.index_update(Theta, jop.index[N_domain:2*N_domain, 0:N_domain], jnp.transpose(jnp.reshape(val, (N_domain, N_domain))))
+        Theta = Theta.at[0:N_domain, N_domain:2*N_domain].set(jnp.reshape(val, (N_domain, N_domain)))
+        Theta = Theta.at[N_domain:2*N_domain, 0:N_domain].set(jnp.transpose(jnp.reshape(val, (N_domain, N_domain))))
         
         val = vmap(lambda x1, x2, y1, y2: K.D_x1_DD_y2_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),jnp.transpose(XXdd0).flatten(),jnp.transpose(XXdd1).flatten())
-        Theta = jop.index_update(Theta, jop.index[0:N_domain, 2*N_domain:3*N_domain], jnp.reshape(val, (N_domain, N_domain)))
-        Theta = jop.index_update(Theta, jop.index[2*N_domain:3*N_domain, 0:N_domain], jnp.transpose(jnp.reshape(val, (N_domain, N_domain))))
+        Theta = Theta.at[0:N_domain, 2*N_domain:3*N_domain].set(jnp.reshape(val, (N_domain, N_domain)))
+        Theta = Theta.at[2*N_domain:3*N_domain, 0:N_domain].set(jnp.transpose(jnp.reshape(val, (N_domain, N_domain))))
         
         val = vmap(lambda x1, x2, y1, y2: K.D_x2_D_y2_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),jnp.transpose(XXdd0).flatten(),jnp.transpose(XXdd1).flatten())
-        Theta = jop.index_update(Theta, jop.index[N_domain:2*N_domain, N_domain:2*N_domain], jnp.reshape(val, (N_domain, N_domain)))
+        Theta = Theta.at[N_domain:2*N_domain, N_domain:2*N_domain].set(jnp.reshape(val, (N_domain, N_domain)))
         
         val = vmap(lambda x1, x2, y1, y2: K.D_x2_DD_y2_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),jnp.transpose(XXdd0).flatten(),jnp.transpose(XXdd1).flatten())
-        Theta = jop.index_update(Theta, jop.index[N_domain:2*N_domain, 2*N_domain:3*N_domain], jnp.reshape(val, (N_domain, N_domain)))
-        Theta = jop.index_update(Theta, jop.index[2*N_domain:3*N_domain, N_domain:2*N_domain], jnp.transpose(jnp.reshape(val, (N_domain, N_domain))))
+        Theta = Theta.at[N_domain:2*N_domain, 2*N_domain:3*N_domain].set(jnp.reshape(val, (N_domain, N_domain)))
+        Theta = Theta.at[2*N_domain:3*N_domain, N_domain:2*N_domain].set(jnp.transpose(jnp.reshape(val, (N_domain, N_domain))))
         
         val = vmap(lambda x1, x2, y1, y2: K.DD_x2_DD_y2_kappa(x1, x2, y1, y2, kernel_parameter))(XXdd0.flatten(),XXdd1.flatten(),jnp.transpose(XXdd0).flatten(),jnp.transpose(XXdd1).flatten())
-        Theta = jop.index_update(Theta, jop.index[2*N_domain:3*N_domain, 2*N_domain:3*N_domain], jnp.reshape(val, (N_domain, N_domain)))
+        Theta = Theta.at[2*N_domain:3*N_domain, 2*N_domain:3*N_domain].set(jnp.reshape(val, (N_domain, N_domain)))
         
         # interior+boundary v.s. interior+boundary
         val = vmap(lambda x1, x2, y1, y2: K.kappa(x1, x2, y1, y2, kernel_parameter))(XXdbdb0.flatten(),XXdbdb1.flatten(),jnp.transpose(XXdbdb0).flatten(),jnp.transpose(XXdbdb1).flatten())
-        Theta = jop.index_update(Theta, jop.index[3*N_domain:, 3*N_domain:], jnp.reshape(val, (N_domain+N_boundary, N_domain+N_boundary)))
+        Theta = Theta.at[3*N_domain:, 3*N_domain:].set(jnp.reshape(val, (N_domain+N_boundary, N_domain+N_boundary)))
         
         # interior v.s. interior+boundary
         val = vmap(lambda x1, x2, y1, y2: K.D_x1_kappa(x1, x2, y1, y2, kernel_parameter))(XXddb0.flatten(),XXddb1.flatten(),XXddb0_2.flatten(),XXddb1_2.flatten())
-        Theta = jop.index_update(Theta, jop.index[0:N_domain, 3*N_domain:], jnp.reshape(val, (N_domain, N_domain+N_boundary)))
-        Theta = jop.index_update(Theta, jop.index[3*N_domain:, 0:N_domain], jnp.transpose(jnp.reshape(val, (N_domain, N_domain+N_boundary))))
+        Theta = Theta.at[0:N_domain, 3*N_domain:].set(jnp.reshape(val, (N_domain, N_domain+N_boundary)))
+        Theta = Theta.at[3*N_domain:, 0:N_domain].set(jnp.transpose(jnp.reshape(val, (N_domain, N_domain+N_boundary))))
         
         val = vmap(lambda x1, x2, y1, y2: K.D_x2_kappa(x1, x2, y1, y2, kernel_parameter))(XXddb0.flatten(),XXddb1.flatten(),XXddb0_2.flatten(),XXddb1_2.flatten())
-        Theta = jop.index_update(Theta, jop.index[N_domain:2*N_domain, 3*N_domain:], jnp.reshape(val, (N_domain, N_domain+N_boundary)))
-        Theta = jop.index_update(Theta, jop.index[3*N_domain:, N_domain:2*N_domain], jnp.transpose(onp.reshape(val, (N_domain, N_domain+N_boundary))))
+        Theta = Theta.at[N_domain:2*N_domain, 3*N_domain:].set(jnp.reshape(val, (N_domain, N_domain+N_boundary)))
+        Theta = Theta.at[3*N_domain:, N_domain:2*N_domain].set(jnp.transpose(jnp.reshape(val, (N_domain, N_domain+N_boundary))))
         
         val = vmap(lambda x1, x2, y1, y2: K.DD_x2_kappa(x1, x2, y1, y2, kernel_parameter))(XXddb0.flatten(),XXddb1.flatten(),XXddb0_2.flatten(),XXddb1_2.flatten())
-        Theta = jop.index_update(Theta, jop.index[2*N_domain:3*N_domain, 3*N_domain:], jnp.reshape(val, (N_domain, N_domain+N_boundary)))
-        Theta = jop.index_update(Theta, jop.index[3*N_domain:, 2*N_domain:3*N_domain], jnp.transpose(jnp.reshape(val, (N_domain, N_domain+N_boundary))))
+        Theta = Theta.at[2*N_domain:3*N_domain, 3*N_domain:].set(jnp.reshape(val, (N_domain, N_domain+N_boundary)))
+        Theta = Theta.at[3*N_domain:, 2*N_domain:3*N_domain].set(jnp.transpose(jnp.reshape(val, (N_domain, N_domain+N_boundary))))
         return Theta
     elif eqn == 'Eikonal':
         Theta = onp.zeros((4*N_domain + N_boundary, 4*N_domain + N_boundary))
