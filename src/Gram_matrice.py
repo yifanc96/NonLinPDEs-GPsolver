@@ -1,9 +1,8 @@
 # JAX
 import jax.numpy as jnp
 from jax import vmap
-from jax.config import config; 
-import jax.ops as jop
-config.update("jax_enable_x64", True)
+import jax
+jax.config.update("jax_enable_x64", True)
 
 # numpy
 import numpy as onp

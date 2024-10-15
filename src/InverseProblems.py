@@ -3,9 +3,8 @@ import jax.numpy as jnp
 from jax import grad, vmap, hessian, jit
 from functools import partial
 
-import jax.ops as jop
-from jax.config import config; 
-config.update("jax_enable_x64", True)
+import jax
+jax.config.update("jax_enable_x64", True)
 
 # numpy
 import numpy as onp

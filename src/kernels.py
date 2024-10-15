@@ -1,7 +1,7 @@
 import jax.numpy as jnp
 from jax import grad, jit
-from jax.config import config; 
-config.update("jax_enable_x64", True)
+import jax
+jax.config.update("jax_enable_x64", True)
 
 from functools import partial # for jit to make codes faster
 
