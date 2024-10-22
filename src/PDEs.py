@@ -4,9 +4,8 @@ from jax import grad, vmap, hessian, jit
 
 from functools import partial
 
-import jax.ops as jop
-from jax.config import config; 
-config.update("jax_enable_x64", True)
+import jax
+jax.config.update("jax_enable_x64", True)
 
 # numpy
 import numpy as onp
@@ -300,10 +299,10 @@ class Burgers(object):
 
         mtx = jnp.zeros((4*self.N_domain+self.N_boundary, 3*self.N_domain))
         mtx1 = jnp.concatenate((-self.alpha*jnp.diag(v2), -self.alpha*jnp.diag(v0), self.nu*jnp.eye(self.N_domain)), axis=1)
-        mtx = jop.index_update(mtx, jop.index[0:self.N_domain, :], mtx1)
-        mtx = jop.index_update(mtx, jop.index[self.N_domain:2*self.N_domain, self.N_domain:2*self.N_domain], jnp.eye(self.N_domain))
-        mtx = jop.index_update(mtx, jop.index[2*self.N_domain:3*self.N_domain, 2*self.N_domain:3*self.N_domain], jnp.eye(self.N_domain))
-        mtx = jop.index_update(mtx, jop.index[3*self.N_domain:4*self.N_domain, :self.N_domain], jnp.eye(self.N_domain))
+        mtx = mtx.at[0:self.N_domain, :].set(mtx1)
+        mtx = mtx.at[self.N_domain:2*self.N_domain, self.N_domain:2*self.N_domain].set(jnp.eye(self.N_domain))
+        mtx = mtx.at[2*self.N_domain:3*self.N_domain, 2*self.N_domain:3*self.N_domain].set(jnp.eye(self.N_domain))
+        mtx = mtx.at[3*self.N_domain:4*self.N_domain, :self.N_domain].set(jnp.eye(self.N_domain))
         ss = jnp.linalg.solve(self.L, mtx)
         return 2*jnp.matmul(jnp.transpose(ss),ss)
     
