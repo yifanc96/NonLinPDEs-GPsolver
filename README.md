@@ -30,3 +30,16 @@ In the `src` folder:
 - `solver.py` contains a high level class that integrate the above three files to run the algorithms for any PDEs and inverse problems
 
 In addition, folder `reference_solver` contains several classical solvers for these PDEs, which are used for comparison purposes
+
+
+```
+@article{chen2021solving,
+  title={Solving and learning nonlinear PDEs with Gaussian processes},
+  author={Chen, Yifan and Hosseini, Bamdad and Owhadi, Houman and Stuart, Andrew M},
+  journal={Journal of Computational Physics},
+  volume={447},
+  pages={110668},
+  year={2021},
+  publisher={Elsevier}
+}
+```
